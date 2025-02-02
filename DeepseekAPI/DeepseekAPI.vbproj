@@ -40,5 +40,9 @@ Initial version.
       <PackagePath>readme.md</PackagePath>
     </Content>
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
 
 </Project>

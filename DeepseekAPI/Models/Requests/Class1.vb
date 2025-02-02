@@ -9,7 +9,7 @@ Namespace Models
         ''' <summary>
         ''' 对话的消息列表。
         ''' </summary>
-        Public Property Messages As IReadOnlyList(Of Message)
+        Public Property Messages As IReadOnlyList(Of ChatMessage)
 
         ''' <summary>
         ''' 使用的模型的 ID，详见 <see cref="ModelNames"/>。必填，否则服务端会报错。
@@ -285,7 +285,7 @@ Namespace Models
     ''' <summary>
     ''' 聊天消息
     ''' </summary>
-    Public Class Message
+    Public Class ChatMessage
         ''' <summary>
         ''' 消息的内容
         ''' </summary>

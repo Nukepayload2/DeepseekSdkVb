@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Nukepayload2.AI.Providers.Deepseek</RootNamespace>
+    <AssemblyName>Nukepayload2.AI.Providers.Deepseek</AssemblyName>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <Version>1.0.0-beta1</Version>
+    <PackageId>$(AssemblyName)</PackageId>
+    <Description>VB-friendly .NET bindings for the Deepseek API. It's part of the Nukepayload2 VB AI SDK as a model provider.</Description>
+    <PackageProjectUrl>https://github.com/Nukepayload2/DeepseekSdkVb</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Nukepayload2/DeepseekSdkVb.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>Deepseek Chat AI LLM text generation</PackageTags>
+    <OptionStrict>On</OptionStrict>
+    <Deterministic>True</Deterministic>
+    <Copyright>Copyright 2025 Nukepayload2</Copyright>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <Authors>Nukepayload2</Authors>
+    <PackageReleaseNotes>
+Initial version.
+    </PackageReleaseNotes>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0'">
+    <IsAotCompatible>True</IsAotCompatible>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.0.0-preview.9.24556.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nukepayload2.AI.Providers.Deepseek.Serialization" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\readme.md">
+      <PackagePath>readme.md</PackagePath>
+    </Content>
+  </ItemGroup>
+
+</Project>

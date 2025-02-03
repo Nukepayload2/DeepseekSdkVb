@@ -35,6 +35,7 @@ Public Class ChatClient
         Dim reader As New ServerSentEventReader(
             Async Function(jsonStream) As Task
                 Dim response = ChatResponse.FromJson(jsonStream)
+                Debug.WriteLine("Server stream delta: " & IoUtils.UTF8NoBOM.GetString(jsonStream.ToArray))
                 If response IsNot Nothing Then
                     Await yieldCallback(response)
                 End If

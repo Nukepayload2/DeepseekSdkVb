@@ -1,4 +1,8 @@
-﻿Imports System.Text.Json.Serialization
+﻿Imports System.IO
+Imports System.Text.Json.Serialization
+Imports Newtonsoft.Json
+Imports Nukepayload2.AI.Providers.Deepseek.Serialization
+Imports Nukepayload2.IO.Json.Serialization.NewtonsoftJson
 
 Namespace Models
     ''' <summary>
@@ -40,6 +44,20 @@ Namespace Models
         ''' 该对话补全请求的用量信息
         ''' </summary>
         Public Property Usage As Usage
+
+        Private Shared ReadOnly s_defaultErrorHandler As New JsonReadErrorHandler
+
+        Public Shared Function FromJson(json As Stream) As ChatResponse
+            Using jsonReader As New JsonTextReader(New StreamReader(json))
+                Return ResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
+            End Using
+        End Function
+
+        Public Shared Function FromJson(json As String) As ChatResponse
+            Using jsonReader As New JsonTextReader(New StringReader(json))
+                Return ResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
+            End Using
+        End Function
     End Class
 
     ''' <summary>

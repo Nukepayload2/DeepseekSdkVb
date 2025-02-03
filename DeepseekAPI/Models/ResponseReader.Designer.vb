@@ -12,21 +12,21 @@ Imports Newtonsoft.Json.Linq
 Imports Nukepayload2.IO.Json.Serialization.NewtonsoftJson
 
 Namespace Serialization
-    Partial Class RequestReader
+    Partial Class ResponseReader
         ''' <summary>
-        ''' Reads <see cref="ChatRequest"/> from JsonReader.
+        ''' Reads <see cref="ChatResponse"/> from JsonReader.
         ''' </summary>
-        Public Shared Function ReadChatRequest(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ChatRequest
+        Public Shared Function ReadChatResponse(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ChatResponse
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("ChatRequest", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("ChatResponse", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New ChatRequest
+            Dim entity As New ChatResponse
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -38,14 +38,36 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "messages"
+                            Case "id"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Messages = Nothing
+                                    entity.Id = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ChatResponse", name, reader)
                                 Else
-                                    entity.Messages = ReadIReadOnlyListOfChatMessage(reader, readState)
+                                    entity.Id = Convert.ToString(reader.Value)
+                                End If
+                            Case "choices"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Choices = Nothing
+                                Else
+                                    entity.Choices = ReadIReadOnlyListOfChoice(reader, readState)
+                                End If
+                            Case "created"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Created = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ChatResponse", name, reader)
+                                Else
+                                    entity.Created = Convert.ToInt64(reader.Value)
                                 End If
                             Case "model"
                                 If Not reader.Read() Then
@@ -54,145 +76,43 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.Model = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
+                                    readState.OnConflictingTokenType("ChatResponse", name, reader)
                                 Else
                                     entity.Model = Convert.ToString(reader.Value)
                                 End If
-                            Case "frequency_penalty"
+                            Case "system_fingerprint"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.FrequencyPenalty = Nothing
+                                    entity.SystemFingerprint = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
+                                    readState.OnConflictingTokenType("ChatResponse", name, reader)
                                 Else
-                                    entity.FrequencyPenalty = Convert.ToDouble(reader.Value)
+                                    entity.SystemFingerprint = Convert.ToString(reader.Value)
                                 End If
-                            Case "max_tokens"
+                            Case "object"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.MaxTokens = Nothing
+                                    entity.Object = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
+                                    readState.OnConflictingTokenType("ChatResponse", name, reader)
                                 Else
-                                    entity.MaxTokens = Convert.ToInt32(reader.Value)
+                                    entity.Object = Convert.ToString(reader.Value)
                                 End If
-                            Case "presence_penalty"
+                            Case "usage"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.PresencePenalty = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
+                                    entity.Usage = Nothing
                                 Else
-                                    entity.PresencePenalty = Convert.ToDouble(reader.Value)
-                                End If
-                            Case "response_format"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.ResponseFormat = Nothing
-                                Else
-                                    entity.ResponseFormat = ReadResponseFormat(reader, readState)
-                                End If
-                            Case "stop"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.StopWords = Nothing
-                                Else
-                                    entity.StopWords = ReadIReadOnlyListOfString(reader, readState)
-                                End If
-                            Case "stream"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Stream = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
-                                Else
-                                    entity.Stream = Convert.ToBoolean(reader.Value)
-                                End If
-                            Case "tools"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Tools = Nothing
-                                Else
-                                    entity.Tools = ReadIReadOnlyListOfAICallableTool(reader, readState)
-                                End If
-                            Case "tool_choice"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.ToolChoice = Nothing
-                                Else
-                                    entity.ToolChoice = ReadStringOrObjectOfNamedToolChoice(reader, readState)
-                                End If
-                            Case "stream_options"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.StreamOptions = Nothing
-                                Else
-                                    entity.StreamOptions = ReadStreamOptions(reader, readState)
-                                End If
-                            Case "temperature"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Temperature = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
-                                Else
-                                    entity.Temperature = Convert.ToDouble(reader.Value)
-                                End If
-                            Case "top_p"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.TopP = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
-                                Else
-                                    entity.TopP = Convert.ToDouble(reader.Value)
-                                End If
-                            Case "logprobs"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Logprobs = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
-                                Else
-                                    entity.Logprobs = Convert.ToBoolean(reader.Value)
-                                End If
-                            Case "top_logprobs"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.TopLogprobs = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatRequest", name, reader)
-                                Else
-                                    entity.TopLogprobs = Convert.ToInt32(reader.Value)
+                                    entity.Usage = ReadUsage(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("ChatRequest", name, reader)
+                                readState.OnMissingProperty("ChatResponse", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -207,21 +127,112 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadChatRequest
+        End Function ' ReadChatResponse
         ''' <summary>
-        ''' Reads <see cref="ChatMessage"/> from JsonReader.
+        ''' Reads <see cref="Choice"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadChatMessage(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ChatMessage
+        Private Shared Function ReadChoice(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As Choice
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("ChatMessage", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("Choice", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New ChatMessage
+            Dim entity As New Choice
+        
+            Dim startDepth As Integer = reader.Depth
+            If Not reader.Read() Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+            End If
+        
+            Do
+                Select Case reader.TokenType
+                    Case Global.Newtonsoft.Json.JsonToken.PropertyName
+                        Dim name As String = CType(reader.Value, String)
+                        Select Case name
+                            Case "finish_reason"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.FinishReason = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Choice", name, reader)
+                                Else
+                                    entity.FinishReason = Convert.ToString(reader.Value)
+                                End If
+                            Case "index"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Index = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Choice", name, reader)
+                                Else
+                                    entity.Index = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "message"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Message = Nothing
+                                Else
+                                    entity.Message = ReadResponseMessage(reader, readState)
+                                End If
+                            Case "logprobs"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Logprobs = Nothing
+                                Else
+                                    entity.Logprobs = ReadLogprobs(reader, readState)
+                                End If
+                            Case "delta"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Delta = Nothing
+                                Else
+                                    entity.Delta = ReadResponseDelta(reader, readState)
+                                End If
+                            Case Else
+                                readState.OnMissingProperty("Choice", name, reader)
+                        End Select
+                    Case Global.Newtonsoft.Json.JsonToken.EndObject
+                        Exit Do
+                    Case Else
+                        Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
+                End Select
+            Loop While reader.Read()
+        
+            Dim endDepth As Integer = reader.Depth
+            If endDepth <> startDepth Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
+            End If
+        
+            Return entity
+        End Function ' ReadChoice
+        ''' <summary>
+        ''' Reads <see cref="ResponseMessage"/> from JsonReader.
+        ''' </summary>
+        Private Shared Function ReadResponseMessage(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ResponseMessage
+            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
+                reader.Read()
+            End If
+        
+            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
+                readState.OnConflictingTokenType("ResponseMessage", JsonReadErrorHandler.Positions.StartObject, reader)
+                Return Nothing
+            End If
+        
+            Dim entity As New ResponseMessage
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -240,42 +251,9 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.Content = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
+                                    readState.OnConflictingTokenType("ResponseMessage", name, reader)
                                 Else
                                     entity.Content = Convert.ToString(reader.Value)
-                                End If
-                            Case "role"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Role = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
-                                Else
-                                    entity.Role = Convert.ToString(reader.Value)
-                                End If
-                            Case "name"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Name = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
-                                Else
-                                    entity.Name = Convert.ToString(reader.Value)
-                                End If
-                            Case "prefix"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Prefix = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
-                                Else
-                                    entity.Prefix = Convert.ToBoolean(reader.Value)
                                 End If
                             Case "reasoning_content"
                                 If Not reader.Read() Then
@@ -284,23 +262,32 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.ReasoningContent = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
+                                    readState.OnConflictingTokenType("ResponseMessage", name, reader)
                                 Else
                                     entity.ReasoningContent = Convert.ToString(reader.Value)
                                 End If
-                            Case "tool_call_id"
+                            Case "tool_calls"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.ToolCallId = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ChatMessage", name, reader)
+                                    entity.ToolCalls = Nothing
                                 Else
-                                    entity.ToolCallId = Convert.ToString(reader.Value)
+                                    entity.ToolCalls = ReadIReadOnlyListOfToolCall(reader, readState)
+                                End If
+                            Case "role"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Role = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ResponseMessage", name, reader)
+                                Else
+                                    entity.Role = Convert.ToString(reader.Value)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("ChatMessage", name, reader)
+                                readState.OnMissingProperty("ResponseMessage", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -315,21 +302,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadChatMessage
+        End Function ' ReadResponseMessage
         ''' <summary>
-        ''' Reads <see cref="ResponseFormat"/> from JsonReader.
+        ''' Reads <see cref="ToolCall"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadResponseFormat(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ResponseFormat
+        Private Shared Function ReadToolCall(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ToolCall
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("ResponseFormat", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("ToolCall", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New ResponseFormat
+            Dim entity As New ToolCall
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -341,59 +328,17 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "type"
+                            Case "id"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Type = Nothing
+                                    entity.Id = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("ResponseFormat", name, reader)
+                                    readState.OnConflictingTokenType("ToolCall", name, reader)
                                 Else
-                                    entity.Type = Convert.ToString(reader.Value)
+                                    entity.Id = Convert.ToString(reader.Value)
                                 End If
-                            Case Else
-                                readState.OnMissingProperty("ResponseFormat", name, reader)
-                        End Select
-                    Case Global.Newtonsoft.Json.JsonToken.EndObject
-                        Exit Do
-                    Case Else
-                        Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
-                End Select
-            Loop While reader.Read()
-        
-            Dim endDepth As Integer = reader.Depth
-            If endDepth <> startDepth Then
-                Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
-            End If
-        
-            Return entity
-        End Function ' ReadResponseFormat
-        ''' <summary>
-        ''' Reads <see cref="AICallableTool"/> from JsonReader.
-        ''' </summary>
-        Private Shared Function ReadAICallableTool(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As AICallableTool
-            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
-                reader.Read()
-            End If
-        
-            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("AICallableTool", JsonReadErrorHandler.Positions.StartObject, reader)
-                Return Nothing
-            End If
-        
-            Dim entity As New AICallableTool
-        
-            Dim startDepth As Integer = reader.Depth
-            If Not reader.Read() Then
-                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-            End If
-        
-            Do
-                Select Case reader.TokenType
-                    Case Global.Newtonsoft.Json.JsonToken.PropertyName
-                        Dim name As String = CType(reader.Value, String)
-                        Select Case name
                             Case "type"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
@@ -401,7 +346,7 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.Type = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("AICallableTool", name, reader)
+                                    readState.OnConflictingTokenType("ToolCall", name, reader)
                                 Else
                                     entity.Type = Convert.ToString(reader.Value)
                                 End If
@@ -410,12 +355,12 @@ Namespace Serialization
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Function = Nothing
+                                    entity.FunctionCall = Nothing
                                 Else
-                                    entity.Function = ReadFunctionMetadata(reader, readState)
+                                    entity.FunctionCall = ReadFunctionCall(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("AICallableTool", name, reader)
+                                readState.OnMissingProperty("ToolCall", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -430,21 +375,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadAICallableTool
+        End Function ' ReadToolCall
         ''' <summary>
-        ''' Reads <see cref="FunctionMetadata"/> from JsonReader.
+        ''' Reads <see cref="FunctionCall"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadFunctionMetadata(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As FunctionMetadata
+        Private Shared Function ReadFunctionCall(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As FunctionCall
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("FunctionMetadata", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("FunctionCall", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New FunctionMetadata
+            Dim entity As New FunctionCall
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -463,32 +408,23 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.Name = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("FunctionMetadata", name, reader)
+                                    readState.OnConflictingTokenType("FunctionCall", name, reader)
                                 Else
                                     entity.Name = Convert.ToString(reader.Value)
                                 End If
-                            Case "description"
+                            Case "arguments"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Description = Nothing
+                                    entity.Arguments = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("FunctionMetadata", name, reader)
+                                    readState.OnConflictingTokenType("FunctionCall", name, reader)
                                 Else
-                                    entity.Description = Convert.ToString(reader.Value)
-                                End If
-                            Case "parameters"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Parameters = Nothing
-                                Else
-                                    entity.Parameters = ReadFunctionParameters(reader, readState)
+                                    entity.Arguments = Convert.ToString(reader.Value)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("FunctionMetadata", name, reader)
+                                readState.OnMissingProperty("FunctionCall", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -503,21 +439,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadFunctionMetadata
+        End Function ' ReadFunctionCall
         ''' <summary>
-        ''' Reads <see cref="FunctionParameters"/> from JsonReader.
+        ''' Reads <see cref="Logprobs"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadFunctionParameters(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As FunctionParameters
+        Private Shared Function ReadLogprobs(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As Logprobs
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("FunctionParameters", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("Logprobs", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New FunctionParameters
+            Dim entity As New Logprobs
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -529,37 +465,17 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "type"
+                            Case "content"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Type = Nothing
-                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("FunctionParameters", name, reader)
+                                    entity.Content = Nothing
                                 Else
-                                    entity.Type = Convert.ToString(reader.Value)
-                                End If
-                            Case "properties"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Properties = Nothing
-                                Else
-                                    entity.Properties = ReadDictionaryOfStringAndFunctionParameterDescriptor(reader, readState)
-                                End If
-                            Case "required"
-                                If Not reader.Read() Then
-                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                                End If
-                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Required = Nothing
-                                Else
-                                    entity.Required = ReadIReadOnlyListOfString(reader, readState)
+                                    entity.Content = ReadIReadOnlyListOfLogprobsContent(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("FunctionParameters", name, reader)
+                                readState.OnMissingProperty("Logprobs", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -574,21 +490,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadFunctionParameters
+        End Function ' ReadLogprobs
         ''' <summary>
-        ''' Reads <see cref="FunctionParameterDescriptor"/> from JsonReader.
+        ''' Reads <see cref="LogprobsContent"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadFunctionParameterDescriptor(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As FunctionParameterDescriptor
+        Private Shared Function ReadLogprobsContent(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As LogprobsContent
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("FunctionParameterDescriptor", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("LogprobsContent", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New FunctionParameterDescriptor
+            Dim entity As New LogprobsContent
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -600,48 +516,48 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "type"
+                            Case "token"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Type = Nothing
+                                    entity.Token = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("FunctionParameterDescriptor", name, reader)
+                                    readState.OnConflictingTokenType("LogprobsContent", name, reader)
                                 Else
-                                    entity.Type = Convert.ToString(reader.Value)
+                                    entity.Token = Convert.ToString(reader.Value)
                                 End If
-                            Case "description"
+                            Case "logprob"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Description = Nothing
+                                    entity.Logprob = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("FunctionParameterDescriptor", name, reader)
+                                    readState.OnConflictingTokenType("LogprobsContent", name, reader)
                                 Else
-                                    entity.Description = Convert.ToString(reader.Value)
+                                    entity.Logprob = Convert.ToDouble(reader.Value)
                                 End If
-                            Case "default"
+                            Case "bytes"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.DefaultJson = Nothing
+                                    entity.Bytes = Nothing
                                 Else
-                                    entity.DefaultJson = Global.Newtonsoft.Json.JsonSerializer.CreateDefault().Deserialize(Of Global.Newtonsoft.Json.Linq.JValue)(reader)
+                                    entity.Bytes = ReadIReadOnlyListOfInt32(reader, readState)
                                 End If
-                            Case "enum"
+                            Case "top_logprobs"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.EnumJson = Nothing
+                                    entity.TopLogprobs = Nothing
                                 Else
-                                    entity.EnumJson = ReadIReadOnlyListOfJValue(reader, readState)
+                                    entity.TopLogprobs = ReadIReadOnlyListOfTopLogprobs(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("FunctionParameterDescriptor", name, reader)
+                                readState.OnMissingProperty("LogprobsContent", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -656,21 +572,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadFunctionParameterDescriptor
+        End Function ' ReadLogprobsContent
         ''' <summary>
-        ''' Reads <see cref="NamedToolChoice"/> from JsonReader.
+        ''' Reads <see cref="TopLogprobs"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadNamedToolChoice(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As NamedToolChoice
+        Private Shared Function ReadTopLogprobs(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As TopLogprobs
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("NamedToolChoice", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("TopLogprobs", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New NamedToolChoice
+            Dim entity As New TopLogprobs
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -682,28 +598,39 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "type"
+                            Case "token"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Type = Nothing
+                                    entity.Token = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("NamedToolChoice", name, reader)
+                                    readState.OnConflictingTokenType("TopLogprobs", name, reader)
                                 Else
-                                    entity.Type = Convert.ToString(reader.Value)
+                                    entity.Token = Convert.ToString(reader.Value)
                                 End If
-                            Case "function"
+                            Case "logprob"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.FunctionChoice = Nothing
+                                    entity.Logprob = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("TopLogprobs", name, reader)
                                 Else
-                                    entity.FunctionChoice = ReadNamedToolChoiceFunction(reader, readState)
+                                    entity.Logprob = Convert.ToDouble(reader.Value)
+                                End If
+                            Case "bytes"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Bytes = Nothing
+                                Else
+                                    entity.Bytes = ReadIReadOnlyListOfInt32(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("NamedToolChoice", name, reader)
+                                readState.OnMissingProperty("TopLogprobs", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -718,21 +645,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadNamedToolChoice
+        End Function ' ReadTopLogprobs
         ''' <summary>
-        ''' Reads <see cref="NamedToolChoiceFunction"/> from JsonReader.
+        ''' Reads <see cref="ResponseDelta"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadNamedToolChoiceFunction(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As NamedToolChoiceFunction
+        Private Shared Function ReadResponseDelta(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As ResponseDelta
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("NamedToolChoiceFunction", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("ResponseDelta", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New NamedToolChoiceFunction
+            Dim entity As New ResponseDelta
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -744,19 +671,41 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "name"
+                            Case "content"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Name = Nothing
+                                    entity.Content = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("NamedToolChoiceFunction", name, reader)
+                                    readState.OnConflictingTokenType("ResponseDelta", name, reader)
                                 Else
-                                    entity.Name = Convert.ToString(reader.Value)
+                                    entity.Content = Convert.ToString(reader.Value)
+                                End If
+                            Case "reasoning_content"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.ReasoningContent = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ResponseDelta", name, reader)
+                                Else
+                                    entity.ReasoningContent = Convert.ToString(reader.Value)
+                                End If
+                            Case "role"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Role = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ResponseDelta", name, reader)
+                                Else
+                                    entity.Role = Convert.ToString(reader.Value)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("NamedToolChoiceFunction", name, reader)
+                                readState.OnMissingProperty("ResponseDelta", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -771,21 +720,21 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadNamedToolChoiceFunction
+        End Function ' ReadResponseDelta
         ''' <summary>
-        ''' Reads <see cref="StreamOptions"/> from JsonReader.
+        ''' Reads <see cref="Usage"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadStreamOptions(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As StreamOptions
+        Private Shared Function ReadUsage(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As Usage
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("StreamOptions", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("Usage", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
         
-            Dim entity As New StreamOptions
+            Dim entity As New Usage
         
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
@@ -797,19 +746,72 @@ Namespace Serialization
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
                         Dim name As String = CType(reader.Value, String)
                         Select Case name
-                            Case "include_usage"
+                            Case "completion_tokens"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.IncludeUsage = Nothing
+                                    entity.CompletionTokens = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("StreamOptions", name, reader)
+                                    readState.OnConflictingTokenType("Usage", name, reader)
                                 Else
-                                    entity.IncludeUsage = Convert.ToBoolean(reader.Value)
+                                    entity.CompletionTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "prompt_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.PromptTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Usage", name, reader)
+                                Else
+                                    entity.PromptTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "prompt_cache_hit_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.PromptCacheHitTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Usage", name, reader)
+                                Else
+                                    entity.PromptCacheHitTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "prompt_cache_miss_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.PromptCacheMissTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Usage", name, reader)
+                                Else
+                                    entity.PromptCacheMissTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "total_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.TotalTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("Usage", name, reader)
+                                Else
+                                    entity.TotalTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "prompt_tokens_details"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Details = Nothing
+                                Else
+                                    entity.Details = ReadCompletionTokensDetails(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("StreamOptions", name, reader)
+                                readState.OnMissingProperty("Usage", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -824,11 +826,64 @@ Namespace Serialization
             End If
         
             Return entity
-        End Function ' ReadStreamOptions
+        End Function ' ReadUsage
         ''' <summary>
-        ''' Reads array of <see cref="ChatMessage"/> from JsonReader.
+        ''' Reads <see cref="CompletionTokensDetails"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadIReadOnlyListOfChatMessage(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of ChatMessage)
+        Private Shared Function ReadCompletionTokensDetails(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As CompletionTokensDetails
+            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
+                reader.Read()
+            End If
+        
+            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
+                readState.OnConflictingTokenType("CompletionTokensDetails", JsonReadErrorHandler.Positions.StartObject, reader)
+                Return Nothing
+            End If
+        
+            Dim entity As New CompletionTokensDetails
+        
+            Dim startDepth As Integer = reader.Depth
+            If Not reader.Read() Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+            End If
+        
+            Do
+                Select Case reader.TokenType
+                    Case Global.Newtonsoft.Json.JsonToken.PropertyName
+                        Dim name As String = CType(reader.Value, String)
+                        Select Case name
+                            Case "reasoning_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.ReasoningTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("CompletionTokensDetails", name, reader)
+                                Else
+                                    entity.ReasoningTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case Else
+                                readState.OnMissingProperty("CompletionTokensDetails", name, reader)
+                        End Select
+                    Case Global.Newtonsoft.Json.JsonToken.EndObject
+                        Exit Do
+                    Case Else
+                        Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
+                End Select
+            Loop While reader.Read()
+        
+            Dim endDepth As Integer = reader.Depth
+            If endDepth <> startDepth Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
+            End If
+        
+            Return entity
+        End Function ' ReadCompletionTokensDetails
+        ''' <summary>
+        ''' Reads array of <see cref="Choice"/> from JsonReader.
+        ''' </summary>
+        Private Shared Function ReadIReadOnlyListOfChoice(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of Choice)
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 If Not reader.Read() Then
                     Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
@@ -836,11 +891,11 @@ Namespace Serialization
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
-                readState.OnConflictingTokenType("IReadOnlyListOfChatMessage", JsonReadErrorHandler.Positions.StartArray, reader)
+                readState.OnConflictingTokenType("IReadOnlyListOfChoice", JsonReadErrorHandler.Positions.StartArray, reader)
                 Return Nothing
             End If
         
-            Dim entityList As New List(Of ChatMessage)
+            Dim entityList As New List(Of Choice)
             Dim startDepth As Integer = reader.Depth
         
             If Not reader.Read() Then
@@ -848,16 +903,16 @@ Namespace Serialization
             End If
         
             Do
-                Dim item As ChatMessage
+                Dim item As Choice
                 Select Case reader.TokenType
                     case Global.Newtonsoft.Json.JsonToken.StartObject:
-                        item = ReadChatMessage(reader, readState)
+                        item = ReadChoice(reader, readState)
                     Case Global.Newtonsoft.Json.JsonToken.Null
                         item = Nothing
                     Case Global.Newtonsoft.Json.JsonToken.EndArray
                         Exit Do
                     Case Else
-                        readState.OnConflictingTokenType("IReadOnlyListOfChatMessage", JsonReadErrorHandler.Positions.ArrayElement, reader)
+                        readState.OnConflictingTokenType("IReadOnlyListOfChoice", JsonReadErrorHandler.Positions.ArrayElement, reader)
                         item = Nothing
                 End Select
                 entityList.Add(item)
@@ -872,9 +927,9 @@ Namespace Serialization
             Return entityList
         End Function
         ''' <summary>
-        ''' Reads array of <see cref="String"/> from JsonReader.
+        ''' Reads array of <see cref="ToolCall"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadIReadOnlyListOfString(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of String)
+        Private Shared Function ReadIReadOnlyListOfToolCall(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of ToolCall)
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 If Not reader.Read() Then
                     Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
@@ -882,11 +937,11 @@ Namespace Serialization
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
-                readState.OnConflictingTokenType("IReadOnlyListOfString", JsonReadErrorHandler.Positions.StartArray, reader)
+                readState.OnConflictingTokenType("IReadOnlyListOfToolCall", JsonReadErrorHandler.Positions.StartArray, reader)
                 Return Nothing
             End If
         
-            Dim entityList As New List(Of String)
+            Dim entityList As New List(Of ToolCall)
             Dim startDepth As Integer = reader.Depth
         
             If Not reader.Read() Then
@@ -894,62 +949,16 @@ Namespace Serialization
             End If
         
             Do
-                Dim item As String
-                Select Case reader.TokenType
-                    case Global.Newtonsoft.Json.JsonToken.String:
-                        item = Convert.ToString(reader.Value)
-                    Case Global.Newtonsoft.Json.JsonToken.Null
-                        item = Nothing
-                    Case Global.Newtonsoft.Json.JsonToken.EndArray
-                        Exit Do
-                    Case Else
-                        readState.OnConflictingTokenType("IReadOnlyListOfString", JsonReadErrorHandler.Positions.ArrayElement, reader)
-                        item = Nothing
-                End Select
-                entityList.Add(item)
-            Loop While reader.Read()
-        
-            Dim endDepth As Integer = reader.Depth
-        
-            If endDepth <> startDepth Then
-                Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
-            End If
-        
-            Return entityList
-        End Function
-        ''' <summary>
-        ''' Reads array of <see cref="AICallableTool"/> from JsonReader.
-        ''' </summary>
-        Private Shared Function ReadIReadOnlyListOfAICallableTool(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of AICallableTool)
-            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
-                If Not reader.Read() Then
-                    Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
-                End If
-            End If
-        
-            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
-                readState.OnConflictingTokenType("IReadOnlyListOfAICallableTool", JsonReadErrorHandler.Positions.StartArray, reader)
-                Return Nothing
-            End If
-        
-            Dim entityList As New List(Of AICallableTool)
-            Dim startDepth As Integer = reader.Depth
-        
-            If Not reader.Read() Then
-                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-            End If
-        
-            Do
-                Dim item As AICallableTool
+                Dim item As ToolCall
                 Select Case reader.TokenType
                     case Global.Newtonsoft.Json.JsonToken.StartObject:
-                        item = ReadAICallableTool(reader, readState)
+                        item = ReadToolCall(reader, readState)
                     Case Global.Newtonsoft.Json.JsonToken.Null
                         item = Nothing
                     Case Global.Newtonsoft.Json.JsonToken.EndArray
                         Exit Do
                     Case Else
-                        readState.OnConflictingTokenType("IReadOnlyListOfAICallableTool", JsonReadErrorHandler.Positions.ArrayElement, reader)
+                        readState.OnConflictingTokenType("IReadOnlyListOfToolCall", JsonReadErrorHandler.Positions.ArrayElement, reader)
                         item = Nothing
                 End Select
                 entityList.Add(item)
@@ -964,9 +973,9 @@ Namespace Serialization
             Return entityList
         End Function
         ''' <summary>
-        ''' Reads array of <see cref="JValue"/> from JsonReader.
+        ''' Reads array of <see cref="LogprobsContent"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadIReadOnlyListOfJValue(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of JValue)
+        Private Shared Function ReadIReadOnlyListOfLogprobsContent(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of LogprobsContent)
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 If Not reader.Read() Then
                     Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
@@ -974,11 +983,11 @@ Namespace Serialization
             End If
         
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
-                readState.OnConflictingTokenType("IReadOnlyListOfJValue", JsonReadErrorHandler.Positions.StartArray, reader)
+                readState.OnConflictingTokenType("IReadOnlyListOfLogprobsContent", JsonReadErrorHandler.Positions.StartArray, reader)
                 Return Nothing
             End If
         
-            Dim entityList As New List(Of JValue)
+            Dim entityList As New List(Of LogprobsContent)
             Dim startDepth As Integer = reader.Depth
         
             If Not reader.Read() Then
@@ -986,16 +995,16 @@ Namespace Serialization
             End If
         
             Do
-                Dim item As JValue
+                Dim item As LogprobsContent
                 Select Case reader.TokenType
                     case Global.Newtonsoft.Json.JsonToken.StartObject:
-                        item = Global.Newtonsoft.Json.JsonSerializer.CreateDefault().Deserialize(Of Global.Newtonsoft.Json.Linq.JValue)(reader)
+                        item = ReadLogprobsContent(reader, readState)
                     Case Global.Newtonsoft.Json.JsonToken.Null
                         item = Nothing
                     Case Global.Newtonsoft.Json.JsonToken.EndArray
                         Exit Do
                     Case Else
-                        readState.OnConflictingTokenType("IReadOnlyListOfJValue", JsonReadErrorHandler.Positions.ArrayElement, reader)
+                        readState.OnConflictingTokenType("IReadOnlyListOfLogprobsContent", JsonReadErrorHandler.Positions.ArrayElement, reader)
                         item = Nothing
                 End Select
                 entityList.Add(item)
@@ -1010,83 +1019,97 @@ Namespace Serialization
             Return entityList
         End Function
         ''' <summary>
-        ''' Reads composite type <see cref="StringOrObjectOfNamedToolChoice"/> from JsonReader.
+        ''' Reads array of <see cref="Int32?"/> from JsonReader.
         ''' </summary>
-        Private Shared Function ReadStringOrObjectOfNamedToolChoice(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As StringOrObject(Of NamedToolChoice)
+        Private Shared Function ReadIReadOnlyListOfInt32(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of Int32?)
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
-                reader.Read()
+                If Not reader.Read() Then
+                    Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
+                End If
             End If
         
-            Dim startDepth As Integer = reader.Depth
-        
-            Dim item As New StringOrObject(Of NamedToolChoice)
-        
-            Select Case reader.TokenType
-                Case Global.Newtonsoft.Json.JsonToken.StartObject
-                    item.ObjectValue = ReadNamedToolChoice(reader, readState)
-                Case Global.Newtonsoft.Json.JsonToken.String
-                    item.StringValue = Convert.ToString(reader.Value)
-                Case Global.Newtonsoft.Json.JsonToken.Null
-                    ' Do nothing when we have null in composite type. No property to set.
-                Case Else
-                    readState.OnConflictingTokenType("StringOrObjectOfNamedToolChoice", JsonReadErrorHandler.Positions.JTokenDiscriminator, reader)
-            End Select
-
-            Dim endDepth As Integer = reader.Depth
-
-            If endDepth <> startDepth Then
-                throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
-            End If
-
-            Return item
-        End Function ' ReadStringOrObjectOfNamedToolChoice
-        ''' <summary>
-        ''' Reads <see cref="DictionaryOfStringAndFunctionParameterDescriptor"/> from JsonReader.
-        ''' </summary>
-        Private Shared Function ReadDictionaryOfStringAndFunctionParameterDescriptor(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As Dictionary(Of String, FunctionParameterDescriptor)
-            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
-                reader.Read()
-            End If
-        
-            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("DictionaryOfStringAndFunctionParameterDescriptor", JsonReadErrorHandler.Positions.StartObject, reader)
+            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
+                readState.OnConflictingTokenType("IReadOnlyListOfInt32", JsonReadErrorHandler.Positions.StartArray, reader)
                 Return Nothing
             End If
         
-            Dim entity As New Dictionary(Of String, FunctionParameterDescriptor)
-        
+            Dim entityList As New List(Of Int32?)
             Dim startDepth As Integer = reader.Depth
+        
             If Not reader.Read() Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
             End If
         
             Do
+                Dim item As Int32?
                 Select Case reader.TokenType
-                    Case Global.Newtonsoft.Json.JsonToken.PropertyName
-                        Dim name As String = CType(reader.Value, String)
-                            If Not reader.Read() Then
-                                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
-                            End If
-                            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                entity(name) = Nothing
-                            Else
-                                entity(name) = ReadFunctionParameterDescriptor(reader, readState)
-                            End If
-
-                    Case Global.Newtonsoft.Json.JsonToken.EndObject
+                    case Global.Newtonsoft.Json.JsonToken.Integer:
+                        item = Convert.ToInt32(reader.Value)
+                    Case Global.Newtonsoft.Json.JsonToken.Null
+                        item = Nothing
+                    Case Global.Newtonsoft.Json.JsonToken.EndArray
                         Exit Do
                     Case Else
-                        Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
+                        readState.OnConflictingTokenType("IReadOnlyListOfInt32", JsonReadErrorHandler.Positions.ArrayElement, reader)
+                        item = Nothing
                 End Select
+                entityList.Add(item)
             Loop While reader.Read()
         
             Dim endDepth As Integer = reader.Depth
+        
             If endDepth <> startDepth Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
             End If
         
-            Return entity
-        End Function ' ReadDictionaryOfStringAndFunctionParameterDescriptor
+            Return entityList
+        End Function
+        ''' <summary>
+        ''' Reads array of <see cref="TopLogprobs"/> from JsonReader.
+        ''' </summary>
+        Private Shared Function ReadIReadOnlyListOfTopLogprobs(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of TopLogprobs)
+            If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
+                If Not reader.Read() Then
+                    Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
+                End If
+            End If
+        
+            If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
+                readState.OnConflictingTokenType("IReadOnlyListOfTopLogprobs", JsonReadErrorHandler.Positions.StartArray, reader)
+                Return Nothing
+            End If
+        
+            Dim entityList As New List(Of TopLogprobs)
+            Dim startDepth As Integer = reader.Depth
+        
+            If Not reader.Read() Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+            End If
+        
+            Do
+                Dim item As TopLogprobs
+                Select Case reader.TokenType
+                    case Global.Newtonsoft.Json.JsonToken.StartObject:
+                        item = ReadTopLogprobs(reader, readState)
+                    Case Global.Newtonsoft.Json.JsonToken.Null
+                        item = Nothing
+                    Case Global.Newtonsoft.Json.JsonToken.EndArray
+                        Exit Do
+                    Case Else
+                        readState.OnConflictingTokenType("IReadOnlyListOfTopLogprobs", JsonReadErrorHandler.Positions.ArrayElement, reader)
+                        item = Nothing
+                End Select
+                entityList.Add(item)
+            Loop While reader.Read()
+        
+            Dim endDepth As Integer = reader.Depth
+        
+            If endDepth <> startDepth Then
+                Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
+            End If
+        
+            Return entityList
+        End Function
 
-    End Class ' RequestReader
+    End Class ' ResponseReader
 End Namespace

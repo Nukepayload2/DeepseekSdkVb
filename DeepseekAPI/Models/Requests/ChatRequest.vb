@@ -1,5 +1,9 @@
+Imports System.IO
 Imports System.Text.Json.Serialization
+Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports Nukepayload2.AI.Providers.Deepseek.Serialization
+Imports Nukepayload2.AI.Providers.Deepseek.Utils
 
 Namespace Models
     ''' <summary>
@@ -90,6 +94,23 @@ Namespace Models
         ''' </summary>
         <JsonPropertyName("top_logprobs")>
         Public Property TopLogprobs As Integer?
+
+        Public Function ToJsonUtf8() As MemoryStream
+            Dim ms As New MemoryStream
+            Using sw As New StreamWriter(ms, IoUtils.UTF8NoBOM, 8192, True), jsonWriter As New JsonTextWriter(sw)
+                RequestWriter.WriteChatRequest(jsonWriter, Me)
+            End Using
+            ms.Position = 0
+            Return ms
+        End Function
+
+        Public Function ToJson() As String
+            Using stringWriter = New StringWriter, jsonWriter = New JsonTextWriter(stringWriter)
+                RequestWriter.WriteChatRequest(jsonWriter, Me)
+                Return stringWriter.ToString()
+            End Using
+        End Function
+
     End Class
 
     ''' <summary>

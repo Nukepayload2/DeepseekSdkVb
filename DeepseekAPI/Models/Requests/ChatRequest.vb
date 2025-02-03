@@ -341,6 +341,16 @@ Namespace Models
         <JsonPropertyName("tool_call_id")>
         Public Property ToolCallId As String
 
+        Sub New()
+
+        End Sub
+
+        ''' <param name="role">消息角色，详见 <see cref="ChatRoles"/>。</param>
+        ''' <param name="content">消息内容</param>
+        Sub New(role As String, content As String)
+            Me.Content = content
+            Me.Role = role
+        End Sub
     End Class
 
     ''' <summary>

@@ -1,5 +1,4 @@
 ﻿Imports System.IO
-Imports System.Text.Json.Serialization
 Imports Newtonsoft.Json
 Imports Nukepayload2.AI.Providers.Deepseek.Serialization
 Imports Nukepayload2.IO.Json.Serialization.NewtonsoftJson
@@ -32,7 +31,6 @@ Namespace Models
         ''' <summary>
         ''' 系统指纹
         ''' </summary>
-        <JsonPropertyName("system_fingerprint")>
         Public Property SystemFingerprint As String
 
         ''' <summary>
@@ -72,7 +70,6 @@ Namespace Models
         ''' content_filter：输出内容因触发过滤策略而被过滤。<br/>
         ''' insufficient_system_resource: 由于后端推理资源受限，请求被打断。
         ''' </summary>
-        <JsonPropertyName("finish_reason")>
         Public Property FinishReason As String
 
         ''' <summary>
@@ -106,13 +103,11 @@ Namespace Models
         ''' <summary>
         ''' 推理过程中的内容，用于详细说明推理步骤。
         ''' </summary>
-        <JsonPropertyName("reasoning_content")>
         Public Property ReasoningContent As String
 
         ''' <summary>
         ''' 工具调用的列表，包含每个工具调用的详细信息。
         ''' </summary>
-        <JsonPropertyName("tool_calls")>
         Public Property ToolCalls As IReadOnlyList(Of ToolCall)
 
         ''' <summary>
@@ -138,7 +133,6 @@ Namespace Models
         ''' <summary>
         ''' 与该工具调用相关的函数详细信息，包括函数名称和参数。
         ''' </summary>
-        <JsonPropertyName("function")>
         Public Property FunctionCall As FunctionCall
     End Class
 
@@ -165,7 +159,6 @@ Namespace Models
         ''' <summary>
         ''' 仅适用于 deepseek-reasoner 模型。内容为 assistant 消息中在最终答案之前的推理内容。
         ''' </summary>
-        <JsonPropertyName("reasoning_content")>
         Public Property ReasoningContent As String
         ''' <summary>
         ''' Possible values: [assistant] 产生这条消息的角色。
@@ -207,7 +200,6 @@ Namespace Models
         ''' <summary>
         ''' 该 choice 的对数概率信息。
         ''' </summary>
-        <JsonPropertyName("top_logprobs")>
         Public Property TopLogprobs As IReadOnlyList(Of TopLogprobs)
     End Class
 
@@ -241,32 +233,26 @@ Namespace Models
         ''' <summary>
         ''' 模型 completion 产生的 token 数。
         ''' </summary>
-        <JsonPropertyName("completion_tokens")>
         Public Property CompletionTokens As Integer?
         ''' <summary>
         ''' 用户 prompt 所包含的 token 数。该值等于 prompt_cache_hit_tokens + prompt_cache_miss_tokens
         ''' </summary>
-        <JsonPropertyName("prompt_tokens")>
         Public Property PromptTokens As Integer?
         ''' <summary>
         ''' 用户 prompt 中，命中上下文缓存的 token 数。
         ''' </summary>
-        <JsonPropertyName("prompt_cache_hit_tokens")>
         Public Property PromptCacheHitTokens As Integer?
         ''' <summary>
         ''' 用户 prompt 中，未命中上下文缓存的 token 数。
         ''' </summary>
-        <JsonPropertyName("prompt_cache_miss_tokens")>
         Public Property PromptCacheMissTokens As Integer?
         ''' <summary>
         ''' 该请求中，所有 token 的数量（prompt + completion）。
         ''' </summary>
-        <JsonPropertyName("total_tokens")>
         Public Property TotalTokens As Integer?
         ''' <summary>
         ''' completion tokens 的详细信息。
         ''' </summary>
-        <JsonPropertyName("prompt_tokens_details")>
         Public Property Details As CompletionTokensDetails
 
     End Class
@@ -275,7 +261,6 @@ Namespace Models
         ''' <summary>
         ''' 推理模型所产生的思维链 token 数量
         ''' </summary>
-        <JsonPropertyName("reasoning_tokens")>
         Public Property ReasoningTokens As Integer?
 
     End Class

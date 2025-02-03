@@ -1,5 +1,4 @@
 Imports System.IO
-Imports System.Text.Json.Serialization
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports Nukepayload2.AI.Providers.Deepseek.Serialization
@@ -23,32 +22,27 @@ Namespace Models
         ''' <summary>
         ''' 介于 -2.0 和 2.0 之间的数字。如果该值为正，那么新 token 会根据其在已有文本中的出现频率受到相应的惩罚，降低模型重复相同内容的可能性。
         ''' </summary>
-        <JsonPropertyName("frequency_penalty")>
         Public Property FrequencyPenalty As Double?
 
         ''' <summary>
         ''' 限制一次请求中模型生成 completion 的最大 token 数。输入 token 和输出 token 的总长度受模型的上下文长度的限制。
         ''' default:4096
         ''' </summary>
-        <JsonPropertyName("max_tokens")>
         Public Property MaxTokens As Integer?
 
         ''' <summary>
         ''' 介于 -2.0 和 2.0 之间的数字。如果该值为正，那么新 token 会根据其是否已在已有文本中出现受到相应的惩罚，从而增加模型谈论新主题的可能性。
         ''' </summary>
-        <JsonPropertyName("presence_penalty")>
         Public Property PresencePenalty As Double?
 
         ''' <summary>
         ''' 一个 object，指定模型必须输出的格式。
         ''' </summary>
-        <JsonPropertyName("response_format")>
         Public Property ResponseFormat As ResponseFormat
 
         ''' <summary>
         ''' Up to 16 sequences where the API will stop generating further tokens.
         ''' </summary>
-        <JsonPropertyName("stop")>
         Public Property StopWords As IReadOnlyList(Of String)
 
         ''' <summary>
@@ -66,10 +60,8 @@ Namespace Models
         ''' String: [none, auto, required]
         ''' Object: <see cref="NamedToolChoice"/>
         ''' </summary>
-        <JsonPropertyName("tool_choice")>
         Public Property ToolChoice As StringOrObject(Of NamedToolChoice)
 
-        <JsonPropertyName("stream_options")>
         Public Property StreamOptions As StreamOptions
 
         ''' <summary>
@@ -80,19 +72,16 @@ Namespace Models
         ''' <summary>
         ''' 作为调节采样温度的替代方案，模型会考虑前 top_p 概率的 token 的结果。所以 0.1 就意味着只有包括在最高 10% 概率中的 token 会被考虑。 我们通常建议修改这个值或者更改 temperature，但不建议同时对两者进行修改。
         ''' </summary>
-        <JsonPropertyName("top_p")>
         Public Property TopP As Double?
 
         ''' <summary>
         ''' 是否返回所输出 token 的对数概率。如果为 true，则在 message 的 content 中返回每个输出 token 的对数概率
         ''' </summary>
-        <JsonPropertyName("logprobs")>
         Public Property Logprobs As Boolean?
 
         ''' <summary>
         ''' 一个介于 0 到 20 之间的整数 N，指定每个输出位置返回输出概率 top N 的 token，且返回这些 token 的对数概率。指定此参数时，logprobs 必须为 true。
         ''' </summary>
-        <JsonPropertyName("top_logprobs")>
         Public Property TopLogprobs As Integer?
 
         Public Function ToJsonUtf8() As MemoryStream
@@ -137,7 +126,6 @@ Namespace Models
         ''' <summary>
         ''' 指定选择的工具。
         ''' </summary>
-        <JsonPropertyName("function")>
         Public Property FunctionChoice As NamedToolChoiceFunction
     End Class
 
@@ -157,19 +145,18 @@ Namespace Models
         ''' 此块上的 usage 字段显示整个请求的 token 使用统计信息，而 choices 字段将始终是一个空数组。
         ''' 所有其他块也将包含一个 usage 字段，但其值为 null。
         ''' </summary>
-        <JsonPropertyName("include_usage")>
         Public Property IncludeUsage As Boolean?
     End Class
 
     Public Class AICallableTool
         ''' <summary>
-        ''' 固定值 "function"
+        ''' 固定值 "function"，默认已设置这个值。
         ''' </summary>
         Public Property Type As String = "function"
         ''' <summary>
         ''' 要调用的函数
         ''' </summary>
-        Public Property [Function] As FunctionMetadata
+        Public Property FunctionMetadata As FunctionMetadata
     End Class
 
     ''' <summary>
@@ -198,6 +185,9 @@ Namespace Models
     ''' 参数列表的 JSON schema
     ''' </summary>
     Public Class FunctionParameters
+        ''' <summary>
+        ''' 固定值 "object"，默认已设置这个值。
+        ''' </summary>
         Public Property Type As String = "object"
 
         Public Property Properties As Dictionary(Of String, FunctionParameterDescriptor)
@@ -206,14 +196,31 @@ Namespace Models
 
     End Class
 
+    Public Class JsonSchemaBasicTypes
+        Public Shared ReadOnly Property [String] As String = "string"
+        Public Shared ReadOnly Property Number As String = "number"
+        Public Shared ReadOnly Property [Integer] As String = "integer"
+        Public Shared ReadOnly Property [Boolean] As String = "boolean"
+        Public Shared ReadOnly Property Array As String = "array"
+    End Class
+
     ''' <summary>
     ''' 参数的 JSON schema
     ''' </summary>
     Public Class FunctionParameterDescriptor
+        ''' <summary>
+        ''' 必须是 <see cref="JsonSchemaBasicTypes"/> 的成员
+        ''' </summary>
         Public Property Type As String
 
+        ''' <summary>
+        ''' 参数的说明
+        ''' </summary>
         Public Property Description As String
 
+        ''' <summary>
+        ''' 默认值，目前只支持简单类型
+        ''' </summary>
         Public Property [Default] As Object
             Get
                 Return ConvertJTokenToObject(DefaultJson)
@@ -332,13 +339,11 @@ Namespace Models
         ''' 推理内容，也就是 &lt;think&gt; 里面的内容。
         ''' </summary>
         ''' <remarks>用于存储与推理相关的额外信息</remarks>
-        <JsonPropertyName("reasoning_content")>
         Public Property ReasoningContent As String
 
         ''' <summary>
         ''' 此消息所响应的 tool call 的 ID。
         ''' </summary>
-        <JsonPropertyName("tool_call_id")>
         Public Property ToolCallId As String
 
         Sub New()

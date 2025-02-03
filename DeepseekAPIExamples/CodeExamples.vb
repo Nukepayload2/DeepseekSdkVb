@@ -54,4 +54,43 @@ Public Class CodeExamples
         Assert.AreNotEqual(0, sb.Length)
     End Function
 
+    <TestMethod>
+    Async Function TestToolCallAsync() As Task
+        Dim clientV4 As New DeepSeekClient(ApiKey)
+        Dim response = Await clientV4.Chat.CompleteAsync(
+            New ChatRequest With {
+                .Model = ModelNames.ChatModel,
+                .Messages = {
+                    New ChatMessage(ChatRoles.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
+                    New ChatMessage(ChatRoles.User, "能帮我查天气吗？"),
+                    New ChatMessage(ChatRoles.Assistant, "好的，请告诉我您所在的城市名称。"),
+                    New ChatMessage(ChatRoles.User, "北京"),
+                    New ChatMessage(ChatRoles.Assistant, "您需要查询未来几天的天气呢？"),
+                    New ChatMessage(ChatRoles.User, "就今天一天的")
+                },
+                .Tools = {
+                    New AICallableTool With {
+                        .FunctionMetadata = New FunctionMetadata With {
+                            .Name = "get_weather",
+                            .Description = "根据提供的城市名称，提供未来的天气数据",
+                            .Parameters = New FunctionParameters With {
+                                .Required = {"city"},
+                                .Properties = New Dictionary(Of String, FunctionParameterDescriptor) From {
+                                    {"city", New FunctionParameterDescriptor With {.Type = JsonSchemaBasicTypes.String, .Description = "搜索的城市名称"}},
+                                    {"days", New FunctionParameterDescriptor With {.Type = JsonSchemaBasicTypes.Integer, .Description = "要查询的未来的天数，默认为0"}}
+                                }
+                            }
+                        }
+                    }
+                },
+                .ToolChoice = "auto",
+                .Temperature = 0.7
+            }
+        )
+        ' 有时候不会返回工具调用信息，得手动多试几次。
+        Dim respMessage = response.Choices?.FirstOrDefault?.Message?.ToolCalls?.FirstOrDefault.FunctionCall
+        Assert.AreEqual("get_weather", respMessage?.Name)
+        Assert.AreEqual("{""city"":""北京"",""days"":0}", respMessage?.Arguments)
+    End Function
+
 End Class

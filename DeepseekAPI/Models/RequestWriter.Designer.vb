@@ -156,9 +156,9 @@ Namespace Serialization
                 writer.WritePropertyName("type")
                 writer.WriteValue(value.Type)
             End If
-            If value.Function IsNot Nothing Then
+            If value.FunctionMetadata IsNot Nothing Then
                 writer.WritePropertyName("function")
-                WriteFunctionMetadata(writer, value.Function)
+                WriteFunctionMetadata(writer, value.FunctionMetadata)
             End If
 
             writer.WriteEndObject()

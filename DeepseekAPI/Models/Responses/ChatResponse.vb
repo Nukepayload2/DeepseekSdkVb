@@ -95,7 +95,7 @@ Namespace Models
         ''' 工具调用的列表，包含每个工具调用的详细信息。
         ''' </summary>
         <JsonPropertyName("tool_calls")>
-        Public Property ToolCalls As List(Of ToolCall)
+        Public Property ToolCalls As IReadOnlyList(Of ToolCall)
 
         ''' <summary>
         ''' 消息的角色，例如 "assistant" 表示由助手生成的消息。
@@ -181,7 +181,10 @@ Namespace Models
         ''' <summary>
         ''' 一个包含该 token UTF-8 字节表示的整数列表。一般在一个 UTF-8 字符被拆分成多个 token 来表示时有用。如果 token 没有对应的字节表示，则该值为 null。
         ''' </summary>
-        Public Property Bytes As Byte()
+        ''' <remarks>
+        ''' 此处的数据类型比较宽泛，用于处理可能不合规的 JSON。实际使用时，应进行校验，然后转换成 <see cref="Byte"/> 数组使用。
+        ''' </remarks>
+        Public Property Bytes As IReadOnlyList(Of Integer?)
 
         ''' <summary>
         ''' 该 choice 的对数概率信息。
@@ -207,7 +210,10 @@ Namespace Models
         ''' <summary>
         ''' 一个包含该 token UTF-8 字节表示的整数列表。一般在一个 UTF-8 字符被拆分成多个 token 来表示时有用。如果 token 没有对应的字节表示，则该值为 null。
         ''' </summary>
-        Public Property Bytes As Byte()
+        ''' <remarks>
+        ''' 此处的数据类型比较宽泛，用于处理可能不合规的 JSON。实际使用时，应进行校验，然后转换成 <see cref="Byte"/> 数组使用。
+        ''' </remarks>
+        Public Property Bytes As IReadOnlyList(Of Integer?)
     End Class
 
     ''' <summary>
@@ -252,7 +258,7 @@ Namespace Models
         ''' 推理模型所产生的思维链 token 数量
         ''' </summary>
         <JsonPropertyName("reasoning_tokens")>
-        Public Property ReasoningTokens As Integer
+        Public Property ReasoningTokens As Integer?
 
     End Class
 

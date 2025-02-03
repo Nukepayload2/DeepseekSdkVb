@@ -179,7 +179,7 @@ Namespace Models
     Public Class FunctionParameters
         Public Property Type As String = "object"
 
-        Public ReadOnly Property Properties As New Dictionary(Of String, FunctionParameterDescriptor)
+        Public Property Properties As Dictionary(Of String, FunctionParameterDescriptor)
 
         Public Property Required As IReadOnlyList(Of String)
 

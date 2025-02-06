@@ -110,6 +110,8 @@ Public Class CodeExamples
         Dim lastToolCall As ToolCall = Nothing
         Dim onResponse =
             Sub(resp As ChatResponse)
+                ' 文档没写这个时候工具调用信息在哪，应该是没支持。下面的代码是占位符。
+                ' https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/
                 Dim toolCall = resp.Choices?.FirstOrDefault?.Message?.ToolCalls?.FirstOrDefault
                 If toolCall IsNot Nothing Then
                     lastToolCall = toolCall

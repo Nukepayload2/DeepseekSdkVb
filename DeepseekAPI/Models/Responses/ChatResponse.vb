@@ -43,6 +43,11 @@ Namespace Models
         ''' </summary>
         Public Property Usage As Usage
 
+        ''' <summary>
+        ''' 出错的情况下，这里面有错误信息。
+        ''' </summary>
+        Public Property LastError As ChatError
+
         Private Shared ReadOnly s_defaultErrorHandler As New JsonReadErrorHandler
 
         Public Shared Function FromJson(json As Stream) As ChatResponse
@@ -56,6 +61,26 @@ Namespace Models
                 Return ResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
             End Using
         End Function
+    End Class
+
+    Public Class ChatError
+        ''' <summary>
+        ''' 错误消息
+        ''' </summary>
+        Public Property Message As String
+        ''' <summary>
+        ''' 错误类型
+        ''' </summary>
+        Public Property Type As String
+        ''' <summary>
+        ''' 参数？
+        ''' </summary>
+        Public Property Param As String
+        ''' <summary>
+        ''' 错误码
+        ''' </summary>
+        Public Property Code As String
+
     End Class
 
     ''' <summary>

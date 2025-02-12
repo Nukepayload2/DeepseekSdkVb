@@ -342,6 +342,11 @@ Namespace Models
         Public Property ReasoningContent As String
 
         ''' <summary>
+        ''' 用于记录流式状态下 assistant 的工具调用
+        ''' </summary>
+        Public Property ToolCalls As IReadOnlyList(Of ToolCall)
+
+        ''' <summary>
         ''' 此消息所响应的 tool call 的 ID。
         ''' </summary>
         Public Property ToolCallId As String

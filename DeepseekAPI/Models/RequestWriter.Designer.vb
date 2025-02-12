@@ -120,9 +120,65 @@ Namespace Serialization
                 writer.WritePropertyName("tool_call_id")
                 writer.WriteValue(value.ToolCallId)
             End If
+            If value.ToolCalls IsNot Nothing Then
+                writer.WritePropertyName("tool_calls")
+                WriteIReadOnlyListOfToolCall(writer, value.ToolCalls)
+            End If
 
             writer.WriteEndObject()
         End Sub ' WriteChatMessage
+
+        ''' <summary>
+        ''' Writes <see cref="ToolCall"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteToolCall(writer As Global.Newtonsoft.Json.JsonWriter, value As ToolCall)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartObject()
+            If value.Id IsNot Nothing Then
+                writer.WritePropertyName("id")
+                writer.WriteValue(value.Id)
+            End If
+            If value.Index IsNot Nothing Then
+                writer.WritePropertyName("index")
+                writer.WriteValue(value.Index)
+            End If
+            If value.Type IsNot Nothing Then
+                writer.WritePropertyName("type")
+                writer.WriteValue(value.Type)
+            End If
+            If value.FunctionCall IsNot Nothing Then
+                writer.WritePropertyName("function")
+                WriteFunctionCall(writer, value.FunctionCall)
+            End If
+
+            writer.WriteEndObject()
+        End Sub ' WriteToolCall
+
+        ''' <summary>
+        ''' Writes <see cref="FunctionCall"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteFunctionCall(writer As Global.Newtonsoft.Json.JsonWriter, value As FunctionCall)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartObject()
+            If value.Name IsNot Nothing Then
+                writer.WritePropertyName("name")
+                writer.WriteValue(value.Name)
+            End If
+            If value.Arguments IsNot Nothing Then
+                writer.WritePropertyName("arguments")
+                writer.WriteValue(value.Arguments)
+            End If
+
+            writer.WriteEndObject()
+        End Sub ' WriteFunctionCall
 
         ''' <summary>
         ''' Writes <see cref="ResponseFormat"/> to JsonWriter.
@@ -209,7 +265,7 @@ Namespace Serialization
                 writer.WriteStartObject()
                 For Each prop In value.Properties
                     writer.WritePropertyName(prop.Key)
-                WriteFunctionParameterDescriptor(writer, prop.Value)
+                    WriteFunctionParameterDescriptor(writer, prop.Value)
                 Next
                 writer.WriteEndObject()
             End If
@@ -353,6 +409,22 @@ Namespace Serialization
             writer.WriteStartArray()
             For Each item In value
                 WriteAICallableTool(writer, item)
+            Next
+            writer.WriteEndArray()
+        End Sub
+
+        ''' <summary>
+        ''' Writes array of <see cref="ToolCall"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteIReadOnlyListOfToolCall(writer As Global.Newtonsoft.Json.JsonWriter, value As IReadOnlyList(Of ToolCall))
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartArray()
+            For Each item In value
+                WriteToolCall(writer, item)
             Next
             writer.WriteEndArray()
         End Sub

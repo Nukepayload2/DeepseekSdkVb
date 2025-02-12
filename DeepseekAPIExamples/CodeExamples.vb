@@ -162,7 +162,9 @@ Public Class CodeExamples
                 ' 在这里返回了示例数据，实际应用中应当进行异步查询请求，并返回真实数据。
                 If lastToolCallFunc.Name = "get_weather" AndAlso lastToolCallFunc.Arguments?.Contains("北京") Then
                     Dim callResult = "晴天，30 摄氏度。"
-                    messages.Add(New ChatMessage(ChatRoles.Assistant, "") With {.ToolCalls = {lastToolCall}})
+                    ' 这部分官方没写文档，照着 OpenAI 的文档来了。
+                    ' https://community.openai.com/t/formatting-assistant-messages-after-tool-function-calls-in-gpt-conversations/535360/3
+                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = {lastToolCall}})
                     messages.Add(New ChatMessage(ChatRoles.Tool, callResult) With {.ToolCallId = lastToolCall.Id, .Name = "get_weather"})
                     lastToolCall = Nothing
                     Await client.Chat.StreamAsync(requestParams, onResponse)

@@ -109,12 +109,20 @@ Public Class CodeExamples
         Dim lastToolCall As ToolCall = Nothing
         Dim onResponse =
             Sub(resp As ChatResponse)
-                ' 文档没写这个时候工具调用信息在哪，应该是没支持。下面的代码是占位符。
+                ' 文档没写这个时候工具调用信息在哪，也没写原生 HTTP 请求怎么工具调用，下面的代码是猜的。最后猜测时间是 2025-02-12 21:00。
                 ' https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/
+                If resp.LastError IsNot Nothing Then
+                    Assert.Fail(resp.LastError.Message)
+                End If
                 Dim toolCall = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls?.FirstOrDefault
                 If toolCall IsNot Nothing Then
-                    lastToolCall = toolCall
-                    Console.WriteLine("触发工具调用")
+                    If lastToolCall?.FunctionCall IsNot Nothing AndAlso toolCall?.FunctionCall IsNot Nothing Then
+                        lastToolCall.FunctionCall.Arguments &= toolCall.FunctionCall.Arguments
+                        Debug.WriteLine("触发增量工具调用，填补参数")
+                    Else
+                        lastToolCall = toolCall
+                        Debug.WriteLine("触发新的工具调用")
+                    End If
                     Return
                 End If
                 Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
@@ -145,7 +153,7 @@ Public Class CodeExamples
             .Stream = True
         }
 
-        ' 这个模型有时候会需要多次工具调用才给你回答，这里我们重试最多十次。
+        ' 当前版本 deepseek-chat 模型 Function Calling 功能效果不稳定，会出现循环调用、空回复的情况，这里我们重试最多十次。
         Await client.Chat.StreamAsync(requestParams, onResponse)
         Dim retry = 0
         Do While lastToolCall IsNot Nothing AndAlso Interlocked.Increment(retry) <= 10
@@ -154,7 +162,8 @@ Public Class CodeExamples
                 ' 在这里返回了示例数据，实际应用中应当进行异步查询请求，并返回真实数据。
                 If lastToolCallFunc.Name = "get_weather" AndAlso lastToolCallFunc.Arguments?.Contains("北京") Then
                     Dim callResult = "晴天，30 摄氏度。"
-                    messages.Add(New ChatMessage(ChatRoles.Tool, callResult) With {.ToolCallId = lastToolCall.Id})
+                    messages.Add(New ChatMessage(ChatRoles.Assistant, "") With {.ToolCalls = {lastToolCall}})
+                    messages.Add(New ChatMessage(ChatRoles.Tool, callResult) With {.ToolCallId = lastToolCall.Id, .Name = "get_weather"})
                     lastToolCall = Nothing
                     Await client.Chat.StreamAsync(requestParams, onResponse)
                 End If

@@ -339,6 +339,17 @@ Namespace Serialization
                                 Else
                                     entity.Id = Convert.ToString(reader.Value)
                                 End If
+                            Case "index"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.Index = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("ToolCall", name, reader)
+                                Else
+                                    entity.Index = Convert.ToString(reader.Value)
+                                End If
                             Case "type"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
@@ -693,6 +704,15 @@ Namespace Serialization
                                 Else
                                     entity.ReasoningContent = Convert.ToString(reader.Value)
                                 End If
+                            Case "tool_calls"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.ToolCalls = Nothing
+                                Else
+                                    entity.ToolCalls = ReadIReadOnlyListOfToolCall(reader, readState)
+                                End If
                             Case "role"
                                 If Not reader.Read() Then
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
@@ -862,6 +882,17 @@ Namespace Serialization
                                     readState.OnConflictingTokenType("CompletionTokensDetails", name, reader)
                                 Else
                                     entity.ReasoningTokens = Convert.ToInt32(reader.Value)
+                                End If
+                            Case "cached_tokens"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.CachedTokens = Nothing
+                                ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
+                                    readState.OnConflictingTokenType("CompletionTokensDetails", name, reader)
+                                Else
+                                    entity.CachedTokens = Convert.ToInt32(reader.Value)
                                 End If
                             Case Else
                                 readState.OnMissingProperty("CompletionTokensDetails", name, reader)

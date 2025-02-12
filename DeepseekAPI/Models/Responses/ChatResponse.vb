@@ -125,6 +125,8 @@ Namespace Models
         ''' </summary>
         Public Property Id As String
 
+        Public Property Index As String
+
         ''' <summary>
         ''' 工具调用的类型，例如 "function" 表示函数类型的工具调用。
         ''' </summary>
@@ -160,6 +162,10 @@ Namespace Models
         ''' 仅适用于 deepseek-reasoner 模型。内容为 assistant 消息中在最终答案之前的推理内容。
         ''' </summary>
         Public Property ReasoningContent As String
+        ''' <summary>
+        ''' 工具调用的列表，包含每个工具调用的详细信息。
+        ''' </summary>
+        Public Property ToolCalls As IReadOnlyList(Of ToolCall)
         ''' <summary>
         ''' Possible values: [assistant] 产生这条消息的角色。
         ''' </summary>
@@ -262,6 +268,7 @@ Namespace Models
         ''' 推理模型所产生的思维链 token 数量
         ''' </summary>
         Public Property ReasoningTokens As Integer?
+        Public Property CachedTokens As Integer?
 
     End Class
 

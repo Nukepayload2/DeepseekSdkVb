@@ -18,13 +18,13 @@ Public Class CodeExamples
 
     <TestMethod>
     Async Function TestCompletionAsync() As Task
-        Dim clientV4 As New DeepSeekClient(ApiKey)
+        Dim client As New DeepSeekClient(ApiKey)
         Dim request As New ChatRequest With {
             .Model = ModelNames.ChatModel,
             .Messages = {New ChatMessage(ChatRoles.User, "你好，你是谁？")},
             .TopP = 0.9
         }
-        Dim response = Await clientV4.Chat.CompleteAsync(request)
+        Dim response = Await client.Chat.CompleteAsync(request)
 
         Dim respMessage = response.Choices?.FirstOrDefault?.Message?.Content
         Console.WriteLine(respMessage)
@@ -33,9 +33,9 @@ Public Class CodeExamples
 
     <TestMethod>
     Async Function TestStreamAsync() As Task
-        Dim clientV4 As New DeepSeekClient(ApiKey)
+        Dim client As New DeepSeekClient(ApiKey)
         Dim sb As New StringBuilder
-        Await clientV4.Chat.StreamAsync(
+        Await client.Chat.StreamAsync(
             New ChatRequest With {
                 .Model = ModelNames.ChatModel,
                 .Messages = {New ChatMessage(ChatRoles.User, "1+1等于多少"),
@@ -57,8 +57,8 @@ Public Class CodeExamples
 
     <TestMethod>
     Async Function TestToolCallAsync() As Task
-        Dim clientV4 As New DeepSeekClient(ApiKey)
-        Dim response = Await clientV4.Chat.CompleteAsync(
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim response = Await client.Chat.CompleteAsync(
             New ChatRequest With {
                 .Model = ModelNames.ChatModel,
                 .Messages = {
@@ -94,10 +94,9 @@ Public Class CodeExamples
         Assert.AreEqual("{""city"":""北京"",""days"":0}", respMessage?.Arguments)
     End Function
 
-    <Ignore("2025-02-03 测试，会产生一个 assistant 空消息，原始 JSON 字符串没有工具调用消息。")>
     <TestMethod>
     Async Function TestToolCallStreamingAsync() As Task
-        Dim clientV4 As New DeepSeekClient(ApiKey)
+        Dim client As New DeepSeekClient(ApiKey)
         Dim sb As New StringBuilder
         Dim messages As New List(Of ChatMessage) From {
             New ChatMessage(ChatRoles.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
@@ -112,7 +111,7 @@ Public Class CodeExamples
             Sub(resp As ChatResponse)
                 ' 文档没写这个时候工具调用信息在哪，应该是没支持。下面的代码是占位符。
                 ' https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/
-                Dim toolCall = resp.Choices?.FirstOrDefault?.Message?.ToolCalls?.FirstOrDefault
+                Dim toolCall = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls?.FirstOrDefault
                 If toolCall IsNot Nothing Then
                     lastToolCall = toolCall
                     Console.WriteLine("触发工具调用")
@@ -147,7 +146,7 @@ Public Class CodeExamples
         }
 
         ' 这个模型有时候会需要多次工具调用才给你回答，这里我们重试最多十次。
-        Await clientV4.Chat.StreamAsync(requestParams, onResponse)
+        Await client.Chat.StreamAsync(requestParams, onResponse)
         Dim retry = 0
         Do While lastToolCall IsNot Nothing AndAlso Interlocked.Increment(retry) <= 10
             Dim lastToolCallFunc = lastToolCall.FunctionCall
@@ -157,7 +156,7 @@ Public Class CodeExamples
                     Dim callResult = "晴天，30 摄氏度。"
                     messages.Add(New ChatMessage(ChatRoles.Tool, callResult) With {.ToolCallId = lastToolCall.Id})
                     lastToolCall = Nothing
-                    Await clientV4.Chat.StreamAsync(requestParams, onResponse)
+                    Await client.Chat.StreamAsync(requestParams, onResponse)
                 End If
             End If
         Loop

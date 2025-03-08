@@ -446,7 +446,7 @@ Namespace Serialization
         End Sub
 
         ''' <summary>
-        ''' Writes composite type <see cref="StringOrObjectOfNamedToolChoice"/> with type-based discriminator to JsonWriter.
+        ''' Writes composite type <see cref="StringOrObject(Of NamedToolChoice)"/> with type-based discriminator to JsonWriter.
         ''' </summary>
         Private Shared Sub WriteStringOrObjectOfNamedToolChoice(writer As Global.Newtonsoft.Json.JsonWriter, value As StringOrObject(Of NamedToolChoice))
             If value Is Nothing Then

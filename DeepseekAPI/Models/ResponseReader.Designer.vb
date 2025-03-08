@@ -1145,7 +1145,7 @@ Namespace Serialization
             Return entityList
         End Function
         ''' <summary>
-        ''' Reads array of <see cref="Int32?"/> from JsonReader.
+        ''' Reads array of <see cref="Int32"/> from JsonReader.
         ''' </summary>
         Private Shared Function ReadIReadOnlyListOfInt32(reader As Global.Newtonsoft.Json.JsonReader, readState As JsonReadErrorHandler) As IReadOnlyList(Of Int32?)
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then

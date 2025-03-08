@@ -1,3 +1,6 @@
 obj
 bin
 .vs
+/DocFxConfig/api
+/DocFxConfig/_site
+*.binlog

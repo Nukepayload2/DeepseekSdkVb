@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../",
+          "files": [
+            "**/DeepseekAPI/bin/Release/netstandard2.0/*.dll"
+          ]
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "templates/default-vb-declaration",
+      "templates/modern-vb-declaration"
+    ],
+    "globalMetadata": {
+      "_appName": "DeepSeekVbNetClient",
+      "_appTitle": "DeepSeekVbNetClient",
+      "_enableSearch": true,
+      "pdf": false
+    }
+  }
+}

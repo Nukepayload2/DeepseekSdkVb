@@ -56,6 +56,38 @@ Public Class CodeExamples
     End Function
 
     <TestMethod>
+    Async Function TestStreamErrorHandlingAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim sb As New StringBuilder
+        Await client.Chat.StreamAsync(
+            New ChatRequest With {
+                .Model = "wrong-model-name",
+                .Messages = {New ChatMessage("user", "1+1等于多少"),
+                              New ChatMessage("assistant", "1+1等于2。"),
+                              New ChatMessage("user", "再加2呢？")},
+                .Temperature = 0.7,
+                .TopP = 0.7,
+                .Stream = True
+            },
+            Sub(resp)
+                If resp.LastError IsNot Nothing Then
+                    Dim err = resp.LastError
+                    sb.Append($"{err.Code}: {err.Message}")
+                    Return
+                End If
+                Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
+                If respMessage <> Nothing Then
+                    sb.AppendLine($"{Environment.TickCount}: {respMessage}")
+                    Assert.Fail("Exception expected")
+                End If
+            End Sub)
+
+        Dim errMsg = sb.ToString
+        Console.WriteLine(errMsg)
+        Assert.IsTrue(errMsg.Contains("Model Not Exist"))
+    End Function
+
+    <TestMethod>
     Async Function TestToolCallAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
         Dim response = Await client.Chat.CompleteAsync(

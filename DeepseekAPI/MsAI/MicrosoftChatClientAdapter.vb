@@ -161,6 +161,7 @@ Public Class MicrosoftChatClientAdapter
                             paramSchema.Default = param.DefaultValue
                         End If
                         ' enum 目前映射不了
+                        If functionParams.Properties Is Nothing Then functionParams.Properties = New Dictionary(Of String, FunctionParameterDescriptor)
                         functionParams.Properties(param.Name) = paramSchema
                     Next
 
@@ -243,12 +244,14 @@ Public Class MicrosoftChatClientAdapter
                         If funcCallByName Is Nothing Then funcCallByName = New Dictionary(Of String, ToolCall)
                         If funcCalls Is Nothing Then funcCalls = New List(Of ToolCall)
                         For Each toolCall In toolCalls
-                            If toolCall?.FunctionCall Is Nothing OrElse toolCall?.Id Is Nothing Then Continue For
+                            If toolCall?.Index Is Nothing Then Continue For
                             Dim existingCall As ToolCall = Nothing
-                            If funcCallByName.TryGetValue(toolCall.Id, existingCall) Then
-                                existingCall.FunctionCall.Arguments &= toolCall.FunctionCall.Arguments
+                            If funcCallByName.TryGetValue(toolCall.Index, existingCall) Then
+                                If existingCall.FunctionCall IsNot Nothing Then
+                                    existingCall.FunctionCall.Arguments &= toolCall.FunctionCall?.Arguments
+                                End If
                             Else
-                                funcCallByName(toolCall.Id) = toolCall
+                                funcCallByName(toolCall.Index) = toolCall
                                 funcCalls.Add(toolCall)
                             End If
                         Next
@@ -271,7 +274,7 @@ Public Class MicrosoftChatClientAdapter
                     Dim toolResponseAdded = Await TryAddToolCallMessages(chatMessages, messages, options, funcCalls, cancellationToken)
                     If Not toolResponseAdded Then Exit Do
                     funcCallByName.Clear()
-                    funcCalls.Clear()
+                    funcCalls = Nothing
                     Await Client.StreamAsync(requestParams, onResponse, cancellationToken)
                 Loop
             End Function

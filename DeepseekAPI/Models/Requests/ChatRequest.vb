@@ -107,7 +107,14 @@ Namespace Models
     ''' </summary>
     ''' <typeparam name="T"></typeparam>
     Public Class StringOrObject(Of T)
+        ''' <summary>
+        ''' 获取或设置字符串值。与对象值是互斥的。
+        ''' </summary>
         Public Property StringValue As String
+
+        ''' <summary>
+        ''' 获取或设置对象值。与字符串值是互斥的。
+        ''' </summary>
         Public Property ObjectValue As T
 
         Public Shared Widening Operator CType(value As String) As StringOrObject(Of T)
@@ -196,11 +203,33 @@ Namespace Models
 
     End Class
 
+    ''' <summary>
+    ''' 提供 JSON Schema 中的基本数据类型常量。
+    ''' </summary>
     Public Class JsonSchemaBasicTypes
+        ''' <summary>
+        ''' 表示 JSON Schema 中的字符串类型。
+        ''' </summary>
         Public Shared ReadOnly Property [String] As String = "string"
+
+        ''' <summary>
+        ''' 表示 JSON Schema 中的数字类型。
+        ''' </summary>
         Public Shared ReadOnly Property Number As String = "number"
+
+        ''' <summary>
+        ''' 表示 JSON Schema 中的整数类型。
+        ''' </summary>
         Public Shared ReadOnly Property [Integer] As String = "integer"
+
+        ''' <summary>
+        ''' 表示 JSON Schema 中的布尔类型。
+        ''' </summary>
         Public Shared ReadOnly Property [Boolean] As String = "boolean"
+
+        ''' <summary>
+        ''' 表示 JSON Schema 中的数组类型。
+        ''' </summary>
         Public Shared ReadOnly Property Array As String = "array"
     End Class
 

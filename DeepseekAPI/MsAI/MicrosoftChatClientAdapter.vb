@@ -233,17 +233,25 @@ Public Class MicrosoftChatClientAdapter
         Dim builder As New AsyncEnumerableAdapter(Of StreamingChatCompletionUpdate).Builder With {
             .ReturnAsync =
             Async Function(enumerator)
-                Dim lastToolCall As ToolCall = Nothing
+                Dim funcCallByName As Dictionary(Of String, ToolCall) = Nothing
+                Dim funcCalls As List(Of ToolCall) = Nothing
                 Dim onResponse =
                 Sub(resp As ChatResponse)
                     ThrowForNonSuccessResponse(resp)
-                    Dim toolCall = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls?.FirstOrDefault
-                    If toolCall IsNot Nothing Then
-                        If lastToolCall?.FunctionCall IsNot Nothing AndAlso toolCall?.FunctionCall IsNot Nothing Then
-                            lastToolCall.FunctionCall.Arguments &= toolCall.FunctionCall.Arguments
-                        Else
-                            lastToolCall = toolCall
-                        End If
+                    Dim toolCalls = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls
+                    If toolCalls IsNot Nothing AndAlso toolCalls.Count > 0 Then
+                        If funcCallByName Is Nothing Then funcCallByName = New Dictionary(Of String, ToolCall)
+                        If funcCalls Is Nothing Then funcCalls = New List(Of ToolCall)
+                        For Each toolCall In toolCalls
+                            If toolCall?.FunctionCall Is Nothing OrElse toolCall?.Id Is Nothing Then Continue For
+                            Dim existingCall As ToolCall = Nothing
+                            If funcCallByName.TryGetValue(toolCall.Id, existingCall) Then
+                                existingCall.FunctionCall.Arguments &= toolCall.FunctionCall.Arguments
+                            Else
+                                funcCallByName(toolCall.Id) = toolCall
+                                funcCalls.Add(toolCall)
+                            End If
+                        Next
                         Return
                     End If
                     Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
@@ -258,12 +266,12 @@ Public Class MicrosoftChatClientAdapter
                 ' 这个模型有时候会需要多次工具调用才给你回答
                 Await Client.StreamAsync(requestParams, onResponse, cancellationToken)
                 Dim retry = 0
-                Do While lastToolCall IsNot Nothing AndAlso Interlocked.Increment(retry) <= ToolCallMaxRetry
-                    Dim handledToolCalls = {lastToolCall}
-                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = handledToolCalls})
-                    Dim toolResponseAdded = Await TryAddToolCallMessages(chatMessages, messages, options, handledToolCalls, cancellationToken)
+                Do While funcCalls IsNot Nothing AndAlso funcCalls.Count > 0 AndAlso Interlocked.Increment(retry) <= ToolCallMaxRetry
+                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = funcCalls})
+                    Dim toolResponseAdded = Await TryAddToolCallMessages(chatMessages, messages, options, funcCalls, cancellationToken)
                     If Not toolResponseAdded Then Exit Do
-                    lastToolCall = Nothing
+                    funcCallByName.Clear()
+                    funcCalls.Clear()
                     Await Client.StreamAsync(requestParams, onResponse, cancellationToken)
                 Loop
             End Function

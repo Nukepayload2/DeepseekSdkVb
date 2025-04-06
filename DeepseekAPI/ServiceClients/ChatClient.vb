@@ -11,7 +11,7 @@ Public Class ChatClient
         MyBase.New(apiKey, client)
     End Sub
 
-    Protected ReadOnly Property ChatCompletionRequestUrl As String = "https://api.deepseek.com/chat/completions"
+    Protected Overridable ReadOnly Property ChatCompletionRequestUrl As String = "https://api.deepseek.com/chat/completions"
 
     Public Async Function CompleteAsync(textRequestBody As ChatRequest,
                                         Optional cancellationToken As CancellationToken = Nothing) As Task(Of ChatResponse)

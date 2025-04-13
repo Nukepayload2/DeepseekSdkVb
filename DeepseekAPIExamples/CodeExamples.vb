@@ -63,6 +63,13 @@ Public Class CodeExamples
     End Function
 
     <TestMethod>
+    Async Function TestUserBalanceAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim result = Await client.User.GetUserBalanceAsync
+        Assert.IsTrue(result.BalanceInfos.Any(Function(it) it.TotalBalance <> Nothing))
+    End Function
+
+    <TestMethod>
     Async Function TestStreamErrorHandlingAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
         Dim sb As New StringBuilder

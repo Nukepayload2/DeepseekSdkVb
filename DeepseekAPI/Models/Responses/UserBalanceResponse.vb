@@ -9,8 +9,11 @@ Namespace Models
     ''' </summary>
     Public Class UserBalanceResponse
         ''' <summary>
-        ''' Reads or writes <c>is_available</c> in json.
+        ''' 当前账户是否有余额可供 API 调用
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>is_available</c> in json.
+        ''' </remarks>
         Public Property IsAvailable As Boolean?
         ''' <summary>
         ''' Reads or writes <c>balance_infos</c> in json.
@@ -37,23 +40,35 @@ Namespace Models
     ''' </summary>
     Public Class BalanceInfo
         ''' <summary>
-        ''' Reads or writes <c>currency</c> in json.
+        ''' 货币，人民币或美元
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>currency</c> in json.
+        ''' </remarks>
         ''' <value>
         ''' Can be value of <c>"CNY"</c>, <c>"USD"</c>
         ''' </value>
         Public Property Currency As String
         ''' <summary>
-        ''' Reads or writes <c>total_balance</c> in json.
+        ''' 总的可用余额，包括赠金和充值余额
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>total_balance</c> in json.
+        ''' </remarks>
         Public Property TotalBalance As String
         ''' <summary>
-        ''' Reads or writes <c>granted_balance</c> in json.
+        ''' 未过期的赠金余额
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>granted_balance</c> in json.
+        ''' </remarks>
         Public Property GrantedBalance As String
         ''' <summary>
-        ''' Reads or writes <c>topped_up_balance</c> in json.
+        ''' 充值余额
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>topped_up_balance</c> in json.
+        ''' </remarks>
         Public Property ToppedUpBalance As String
     End Class
 End Namespace

@@ -41,19 +41,28 @@ Namespace Models
     ''' </summary>
     Public Class ModelBasicInformation
         ''' <summary>
-        ''' Reads or writes <c>id</c> in json.
+        ''' 模型的标识符
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>id</c> in json.
+        ''' </remarks>
         Public Property Id As String
         ''' <summary>
-        ''' Reads or writes <c>object</c> in json.
+        ''' 对象的类型，其值为 model。
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>object</c> in json.
+        ''' </remarks>
         ''' <value>
         ''' Can be value of <c>"list"</c>
         ''' </value>
         Public Property TypeName As String
         ''' <summary>
-        ''' Reads or writes <c>owned_by</c> in json.
+        ''' 拥有该模型的组织。
         ''' </summary>
+        ''' <remarks>
+        ''' Reads or writes <c>owned_by</c> in json.
+        ''' </remarks>
         Public Property OwnedBy As String
     End Class ' ModelBasicInformation
 End Namespace

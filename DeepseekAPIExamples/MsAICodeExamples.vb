@@ -84,7 +84,7 @@ Public Class MsAICodeExamples
             End Sub)
             Assert.Fail("Exception expected")
         Catch ex As DeepSeekHttpRequestException
-            Assert.IsTrue(ex.Details.Message.Contains("Model Not Exist"))
+            Assert.AreEqual("Model Not Exist", ex.Details.Message)
         End Try
     End Function
 

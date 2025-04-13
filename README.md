@@ -6,7 +6,9 @@ VB-friendly .NET bindings for Deepseek API. It's part of the Nukepayload2 VB AI 
 - [x] .NET Framework compatible
 - [x] Microsoft.Extension.AI integration
 
-Code examples: [CodeExamples.vb](https://github.com/Nukepayload2/DeepseekSdkVb/blob/master/DeepseekAPIExamples/CodeExamples.vb)
+Code examples: 
+- [CodeExamples.vb](https://github.com/Nukepayload2/DeepseekSdkVb/blob/master/DeepseekAPIExamples/CodeExamples.vb)
+- [MsAICodeExamples.vb](https://github.com/Nukepayload2/DeepseekSdkVb/blob/master/DeepseekAPIExamples/MsAICodeExamples.vb)
 
 Get on NuGet: [Nukepayload2.AI.Providers.Deepseek](https://www.nuget.org/packages/Nukepayload2.AI.Providers.Deepseek)
 
@@ -30,7 +32,7 @@ We reserve the rights of **making breaking changes** before RTM.
 - [x] Tool call in completion
 - [x] Tool call in streaming
 
-### Microsoft.Extension.AI 9.0.0 Preview
+### Microsoft.Extension.AI 9.0.3 Preview
 - [x] Chat completion
 - [x] Chat streaming
 - [x] Tool call in completion

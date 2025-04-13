@@ -13,12 +13,37 @@ Public Class ChatClient
 
     Protected Overridable ReadOnly Property ChatCompletionRequestUrl As String = "https://api.deepseek.com/chat/completions"
 
+    ''' <summary>
+    ''' Chat completion without streaming.
+    ''' </summary>
+    ''' <param name="textRequestBody">The request message.</param>
+    ''' <param name="cancellationToken">Use it to cancel the request.</param>
+    ''' <returns>The response message or error message.</returns>
+    ''' <exception cref="HttpRequestException">
+    ''' The request was not successful and the response stream is empty.
+    ''' </exception>
+    ''' <remarks>
+    ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>
+    ''' </remarks>
     Public Async Function CompleteAsync(textRequestBody As ChatRequest,
                                         Optional cancellationToken As CancellationToken = Nothing) As Task(Of ChatResponse)
         If textRequestBody.Stream Then Throw New ArgumentException("You must set Stream to False.", NameOf(textRequestBody))
         Return ChatResponse.FromJson(Await CompleteRawAsync(textRequestBody, cancellationToken))
     End Function
 
+    ''' <summary>
+    ''' Chat completion with streaming.
+    ''' </summary>
+    ''' <param name="textRequestBody">The request message.</param>
+    ''' <param name="yieldCallback">The body of async for each loop.</param>
+    ''' <param name="cancellationToken">Use it to cancel the request.</param>
+    ''' <returns>The response message or error message.</returns>
+    ''' <exception cref="HttpRequestException">
+    ''' The request was not successful and the response stream is empty.
+    ''' </exception>
+    ''' <remarks>
+    ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>
+    ''' </remarks>
     Public Async Function StreamAsync(textRequestBody As ChatRequest,
                                       yieldCallback As Action(Of ChatResponse),
                                       Optional cancellationToken As CancellationToken = Nothing) As Task
@@ -29,6 +54,19 @@ Public Class ChatClient
                           End Function, cancellationToken)
     End Function
 
+    ''' <summary>
+    ''' Chat completion with streaming.
+    ''' </summary>
+    ''' <param name="textRequestBody">The request message.</param>
+    ''' <param name="yieldCallback">The body of async for each loop.</param>
+    ''' <param name="cancellationToken">Use it to cancel the request.</param>
+    ''' <returns>The response message or error message.</returns>
+    ''' <exception cref="HttpRequestException">
+    ''' The request was not successful and the response stream is empty.
+    ''' </exception>
+    ''' <remarks>
+    ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>
+    ''' </remarks>
     Public Async Function StreamAsync(textRequestBody As ChatRequest,
                                       yieldCallback As Func(Of ChatResponse, Task),
                                       Optional cancellationToken As CancellationToken = Nothing) As Task

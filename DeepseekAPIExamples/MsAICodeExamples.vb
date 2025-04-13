@@ -2,6 +2,7 @@
 Imports Microsoft.VisualStudio.TestTools.UnitTesting
 Imports Nukepayload2.AI.Providers.Deepseek
 Imports System.Text
+Imports System.Text.Json
 
 <TestClass>
 Public Class MsAICodeExamples
@@ -18,12 +19,12 @@ Public Class MsAICodeExamples
     <TestMethod>
     Async Function TestMicrosoftAICompletionAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).CompleteAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
             {New ChatMessage(ChatRole.User, "你好，你是谁？")},
              New ChatOptions With {.Temperature = 0.7F, .TopP = 0.7F}
         )
 
-        Dim respMessage = response.Choices?.FirstOrDefault?.Text
+        Dim respMessage = response.Messages?.FirstOrDefault?.Text
         Console.WriteLine(respMessage)
         Assert.IsNotNull(respMessage)
     End Function
@@ -31,11 +32,11 @@ Public Class MsAICodeExamples
     <TestMethod>
     Async Function TestMicrosoftAICompletionNoOptionsAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).CompleteAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
             {New ChatMessage(ChatRole.User, "你好，你是谁？")}
         )
 
-        Dim respMessage = response.Choices?.FirstOrDefault?.Text
+        Dim respMessage = response.Messages?.FirstOrDefault?.Text
         Console.WriteLine(respMessage)
         Assert.IsNotNull(respMessage)
     End Function
@@ -47,7 +48,7 @@ Public Class MsAICodeExamples
                         New ChatMessage(ChatRole.Assistant, "1+1等于2。"),
                         New ChatMessage(ChatRole.User, "再加2呢？")}
         Dim options As New ChatOptions With {.Temperature = 0.7F, .TopP = 0.7F}
-        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).CompleteStreamingAsync(messages, options)
+        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetStreamingResponseAsync(messages, options)
         ' 在 VB 支持简化的 IAsyncEnumerable 调用 (Await Each 语句) 之前可以用 System.Linq.Async 读取服务端回复的数据。
         Dim sb As New StringBuilder
         Await respAsyncEnumerate.ForEachAsync(
@@ -72,7 +73,7 @@ Public Class MsAICodeExamples
         Dim sb As New StringBuilder
 
         Try
-            Dim respAsyncEnumerate = client.Chat.AsChatClient("wrong-model-name").CompleteStreamingAsync(messages, options)
+            Dim respAsyncEnumerate = client.Chat.AsChatClient("wrong-model-name").GetStreamingResponseAsync(messages, options)
             ' 在 VB 支持简化的 IAsyncEnumerable 调用 (Await Each 语句) 之前可以用 System.Linq.Async 读取服务端回复的数据。
             Await respAsyncEnumerate.ForEachAsync(
             Sub(update)
@@ -90,19 +91,29 @@ Public Class MsAICodeExamples
     Private Class AIGetWeather
         Inherits AIFunction
 
-        Public Overrides ReadOnly Property Metadata As New AIFunctionMetadata("get_weather") With {
-            .Description = "根据提供的城市名称，提供未来的天气数据",
-            .Parameters = {
-                New AIFunctionParameterMetadata("city") With {
-                    .IsRequired = True, .Description = "搜索的城市名称", .ParameterType = GetType(String)
-                },
-                New AIFunctionParameterMetadata("days") With {
-                    .Description = "要查询的未来的天数，默认为0",
-                    .DefaultValue = 0, .HasDefaultValue = True,
-                    .ParameterType = GetType(Integer)
-                }
-            }
-        }
+        ' 这里建议用 Anthony D. Green 的 ModVB Json 常量语法创建 JsonElement。原版的 VB 得从字符串创建。
+        ' https://anthonydgreen.net/2022/08/20/modvb-wave-1-json-literals-and-pattern-matching/
+
+        Private Shared ReadOnly Schema As String =
+            "{
+  ""title"": ""get_weather"",
+  ""description"": ""根据提供的城市名称，提供未来的天气数据"",
+  ""type"": ""object"",
+  ""properties"": {
+    ""city"": {
+      ""type"": ""string"",
+      ""description"": ""搜索的城市名称""
+    },
+    ""days"": {
+      ""type"": ""integer"",
+      ""description"": ""要查询的未来的天数，默认为0"",
+      ""default"": 0
+    }
+  },
+  ""required"": [""city""]
+}"
+
+        Public Overrides ReadOnly Property JsonSchema As JsonElement = JsonDocument.Parse(Schema).RootElement
 
         Public ReadOnly Property CallLogForTest As New List(Of IEnumerable(Of KeyValuePair(Of String, Object)))
 
@@ -118,11 +129,11 @@ Public Class MsAICodeExamples
         Dim client As New DeepSeekClient(ApiKey)
         Dim tool As New AIGetWeather
         Dim options As New ChatOptions With {
-            .Temperature = 0.7F, .TopP = 0.7F, .ToolMode = ChatToolMode.Auto,
+            .Temperature = 0.6F, .TopP = 0.95F, .ToolMode = ChatToolMode.Auto,
             .Tools = {tool}
         }
         ' 注意：工具调用情况下，聊天记录必须是可修改的，因为要插入工具调用返回的值。
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).CompleteAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
             New List(Of ChatMessage) From {
                 New ChatMessage(ChatRole.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
                 New ChatMessage(ChatRole.User, "能帮我查天气吗？"),
@@ -133,7 +144,7 @@ Public Class MsAICodeExamples
             }, options
         )
 
-        Dim respMessage = response.Choices?.FirstOrDefault?.Text
+        Dim respMessage = response.Messages?.FirstOrDefault?.Text
         Console.WriteLine(respMessage)
         Assert.IsTrue(respMessage.Contains("晴天"))
         Assert.IsTrue(respMessage.Contains("30"))
@@ -156,7 +167,7 @@ Public Class MsAICodeExamples
             .Tools = {tool}
         }
         ' 注意：工具调用情况下，聊天记录必须是可修改的，因为要插入工具调用返回的值。
-        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).CompleteStreamingAsync(
+        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetStreamingResponseAsync(
             New List(Of ChatMessage) From {
                 New ChatMessage(ChatRole.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
                 New ChatMessage(ChatRole.User, "能帮我查天气吗？"),

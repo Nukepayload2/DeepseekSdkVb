@@ -4,7 +4,7 @@
     <RootNamespace>Nukepayload2.AI.Providers.Deepseek</RootNamespace>
     <AssemblyName>Nukepayload2.AI.Providers.Deepseek</AssemblyName>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <Version>1.0.0-rc1</Version>
+    <Version>1.0.0-rc2</Version>
     <PackageId>$(AssemblyName)</PackageId>
     <Description>VB-friendly .NET bindings for the Deepseek API. It's part of the Nukepayload2 VB AI SDK as a model provider.</Description>
     <PackageProjectUrl>https://github.com/Nukepayload2/DeepseekSdkVb</PackageProjectUrl>
@@ -18,7 +18,7 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Authors>Nukepayload2</Authors>
     <PackageReleaseNotes>
-Added Microsoft.Extensions.AI.Abstractions 9.0.0 integration
+Upgrade Microsoft.Extensions.AI.Abstractions to 9.3.0-preview.1.25161.3
     </PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <InheritDocTrimLevel>internal</InheritDocTrimLevel>
@@ -29,7 +29,7 @@ Added Microsoft.Extensions.AI.Abstractions 9.0.0 integration
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.0.0-preview.9.24556.5" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.3.0-preview.1.25161.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SauceControl.InheritDoc" Version="2.0.2">
       <PrivateAssets>all</PrivateAssets>

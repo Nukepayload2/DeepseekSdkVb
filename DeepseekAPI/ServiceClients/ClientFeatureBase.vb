@@ -22,6 +22,10 @@ Public MustInherit Class ClientFeatureBase
         Dim result As New MemoryStream
         Await stream.CopyToAsync(result, 8192, cancellation)
         result.Position = 0
+        If result.Length = 0 Then
+            ' 流里面没东西，请求又失败了，错误信息就从 HTTP 响应里面取
+            response.EnsureSuccessStatusCode()
+        End If
         Return result
     End Function
 
@@ -35,7 +39,6 @@ Public MustInherit Class ClientFeatureBase
         }
         request.Headers.Add("Authorization", "Bearer " & _apiKey)
         Dim response = Await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation)
-        response.EnsureSuccessStatusCode()
         Return response
     End Function
 End Class

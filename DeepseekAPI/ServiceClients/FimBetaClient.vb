@@ -3,7 +3,10 @@ Imports System.Net.Http
 Imports System.Threading
 Imports Nukepayload2.AI.Providers.Deepseek.Models
 
-Public Class FimClient
+''' <summary>
+''' Provides Fill-In-the-Middle completion. The beta API is still in development and may change in stable releases.
+''' </summary>
+Public Class FimBetaClient
     Inherits CompletionClientBase(Of FimRequest, FimResponse)
 
     Sub New(apiKey As String, Optional client As HttpClient = Nothing)
@@ -13,7 +16,7 @@ Public Class FimClient
     Protected Overrides ReadOnly Property RequestUrl As String = "https://api.deepseek.com/beta/completions"
 
     ''' <summary>
-    ''' Complete the fill-in-middlle request.
+    ''' Complete the Fill-In-the-Middle completion request.
     ''' </summary>
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
@@ -30,7 +33,7 @@ Public Class FimClient
     End Function
 
     ''' <summary>
-    ''' Complete the fill-in-middlle request.
+    ''' Complete the Fill-In-the-Middle completion request.
     ''' </summary>
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
@@ -49,7 +52,7 @@ Public Class FimClient
     End Function
 
     ''' <summary>
-    ''' Complete the fill-in-middlle request.
+    ''' Complete the Fill-In-the-Middle completion request.
     ''' </summary>
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>

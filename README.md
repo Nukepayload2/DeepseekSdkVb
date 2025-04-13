@@ -25,12 +25,18 @@ We reserve the rights of **making breaking changes** before RTM.
 - [x] Text streaming
 - [x] Tool call in completion
 - [x] Tool call in streaming (requires DeepSeek-V3-0324 or later)
+- [x] Fill-In-the-Middle completion (beta)
+- [x] List models
+- [x] Get balance
 
 ### Tested Manually
 - [x] Text completion
 - [x] Text streaming
 - [x] Tool call in completion
 - [x] Tool call in streaming
+- [x] Fill-In-the-Middle completion (beta)
+- [x] List models
+- [x] Get balance
 
 ### Microsoft.Extension.AI 9.0.3 Preview
 - [x] Chat completion

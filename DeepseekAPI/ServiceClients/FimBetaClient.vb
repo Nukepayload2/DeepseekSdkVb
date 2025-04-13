@@ -20,9 +20,12 @@ Public Class FimBetaClient
     ''' </summary>
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-completion">Online documentation</see>
@@ -38,9 +41,12 @@ Public Class FimBetaClient
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
     ''' <param name="yieldCallback">The body of async for each loop.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-completion">Online documentation</see>
@@ -57,9 +63,12 @@ Public Class FimBetaClient
     ''' <param name="request">The request message</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
     ''' <param name="yieldCallback">The body of async for each loop.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-completion">Online documentation</see>

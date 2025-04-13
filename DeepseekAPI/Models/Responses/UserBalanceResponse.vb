@@ -17,19 +17,17 @@ Namespace Models
         ''' </summary>
         Public Property BalanceInfos As IReadOnlyList(Of BalanceInfo)
 
-        Private Shared ReadOnly s_defaultErrorHandler As New JsonReadErrorHandler
-
         Public Shared Function FromJson(json As Stream) As UserBalanceResponse
             Using jsonReader As New JsonTextReader(New StreamReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return UserBalanceReader.ReadUserBalanceResponse(jsonReader, s_defaultErrorHandler)
+                Return UserBalanceReader.ReadUserBalanceResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
 
         Public Shared Function FromJson(json As String) As UserBalanceResponse
             Using jsonReader As New JsonTextReader(New StringReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return UserBalanceReader.ReadUserBalanceResponse(jsonReader, s_defaultErrorHandler)
+                Return UserBalanceReader.ReadUserBalanceResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
     End Class ' UserBalanceResponse

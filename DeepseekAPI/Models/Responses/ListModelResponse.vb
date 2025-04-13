@@ -21,19 +21,17 @@ Namespace Models
         ''' </summary>
         Public Property Data As IReadOnlyList(Of ModelBasicInformation)
 
-        Private Shared ReadOnly s_defaultErrorHandler As New JsonReadErrorHandler
-
         Public Shared Function FromJson(json As Stream) As ListModelResponse
             Using jsonReader As New JsonTextReader(New StreamReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return ListModelsReader.ReadListModelResponse(jsonReader, s_defaultErrorHandler)
+                Return ListModelsReader.ReadListModelResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
 
         Public Shared Function FromJson(json As String) As ListModelResponse
             Using jsonReader As New JsonTextReader(New StringReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return ListModelsReader.ReadListModelResponse(jsonReader, s_defaultErrorHandler)
+                Return ListModelsReader.ReadListModelResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
     End Class ' ListModelResponse

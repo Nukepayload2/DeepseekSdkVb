@@ -72,33 +72,27 @@ Public Class CodeExamples
     <TestMethod>
     Async Function TestStreamErrorHandlingAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
-        Dim sb As New StringBuilder
-        Await client.Chat.StreamAsync(
-            New ChatRequest With {
-                .Model = "wrong-model-name",
-                .Messages = {New ChatMessage("user", "1+1等于多少"),
-                              New ChatMessage("assistant", "1+1等于2。"),
-                              New ChatMessage("user", "再加2呢？")},
-                .Temperature = 0.7,
-                .TopP = 0.7,
-                .Stream = True
-            },
-            Sub(resp)
-                If resp.LastError IsNot Nothing Then
-                    Dim err = resp.LastError
-                    sb.Append($"{err.Code}: {err.Message}")
-                    Return
-                End If
-                Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
-                If respMessage <> Nothing Then
-                    sb.AppendLine($"{Environment.TickCount}: {respMessage}")
-                    Assert.Fail("Exception expected")
-                End If
-            End Sub)
-
-        Dim errMsg = sb.ToString
-        Console.WriteLine(errMsg)
-        Assert.IsTrue(errMsg.Contains("Model Not Exist"))
+        Try
+            Await client.Chat.StreamAsync(
+                New ChatRequest With {
+                    .Model = "wrong-model-name",
+                    .Messages = {New ChatMessage("user", "1+1等于多少"),
+                                  New ChatMessage("assistant", "1+1等于2。"),
+                                  New ChatMessage("user", "再加2呢？")},
+                    .Temperature = 0.7,
+                    .TopP = 0.7,
+                    .Stream = True
+                },
+                Sub(resp)
+                    Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
+                    If respMessage <> Nothing Then
+                        Assert.Fail("Exception expected")
+                    End If
+                End Sub)
+            Assert.Fail("Exception expected")
+        Catch ex As DeepSeekHttpRequestException
+            Assert.AreEqual("Model Not Exist", ex.Details.Message)
+        End Try
     End Function
 
     <TestMethod>
@@ -157,9 +151,6 @@ Public Class CodeExamples
             Sub(resp As ChatResponse)
                 ' 文档没写这个时候工具调用信息在哪，也没写原生 HTTP 请求怎么工具调用，下面的代码是猜的。最后猜测时间是 2025-02-12 21:00。
                 ' https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/
-                If resp.LastError IsNot Nothing Then
-                    Assert.Fail(resp.LastError.Message)
-                End If
                 Dim toolCall = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls?.FirstOrDefault
                 If toolCall IsNot Nothing Then
                     If lastToolCall?.FunctionCall IsNot Nothing AndAlso toolCall?.FunctionCall IsNot Nothing Then
@@ -244,6 +235,23 @@ Console.WriteLine($""从1加到10的结果是: {{sum}}"")"
         Dim resp = Await client.Beta.Fim.CompleteAsync(request)
         hole = resp.Choices?.FirstOrDefault?.Text
         Assert.IsTrue(hole.Contains("sum += i"))
+    End Function
+
+    <TestMethod>
+    Async Function TestFimErrorWrongModelAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim request As New FimRequest With {
+            .Model = "wrong-model-name",
+            .MaxTokens = 128,
+            .Prompt = "Dim myName As ",
+            .Suffix = "' The user's name"
+        }
+        Try
+            Await client.Beta.Fim.CompleteAsync(request)
+            Assert.Fail("Should not reach here")
+        Catch ex As DeepSeekHttpRequestException
+            Assert.AreEqual("Model Not Exist", ex.Details.Message)
+        End Try
     End Function
 
     <TestMethod>

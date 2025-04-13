@@ -52,7 +52,6 @@ Public Class MicrosoftChatClientAdapter
                                                  request As ChatRequest, attemptCount As Integer,
                                                  cancellationToken As CancellationToken) As Task(Of MSChatResponse)
         Dim response = Await Client.CompleteAsync(request, cancellationToken)
-        ThrowForNonSuccessResponse(response)
 
         If options?.Tools IsNot Nothing AndAlso options.Tools.Count > 0 Then
             Dim toolCalls = response.Choices?.FirstOrDefault?.Message?.ToolCalls
@@ -132,12 +131,6 @@ Public Class MicrosoftChatClientAdapter
         If argList Is Nothing Then Return Nothing
         Return From prop In argList.Properties Select New KeyValuePair(Of String, Object)(prop.Name, ConvertJTokenToObject(prop.Value))
     End Function
-
-    Private Shared Sub ThrowForNonSuccessResponse(response As ChatResponse)
-        If response.LastError IsNot Nothing Then
-            Throw New InvalidOperationException($"错误 {If(response.LastError.Code, "???")}: {If(response.LastError.Message, "未指定的错误")}")
-        End If
-    End Sub
 
     Private Function ToDoubleWithRounding(value As Single?) As Double?
         If value Is Nothing Then
@@ -240,7 +233,6 @@ Public Class MicrosoftChatClientAdapter
                 Dim funcCalls As List(Of ToolCall) = Nothing
                 Dim onResponse =
                 Sub(resp As ChatResponse)
-                    ThrowForNonSuccessResponse(resp)
                     Dim delta = resp.Choices?.FirstOrDefault?.Delta
                     Dim toolCalls = delta?.ToolCalls
                     If toolCalls IsNot Nothing AndAlso toolCalls.Count > 0 Then

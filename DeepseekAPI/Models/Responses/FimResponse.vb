@@ -64,19 +64,17 @@ Namespace Models
         ''' </remarks>
         Public Property Usage As Usage
 
-        Private Shared ReadOnly s_defaultErrorHandler As New JsonReadErrorHandler
-
         Public Shared Function FromJson(json As Stream) As FimResponse
             Using jsonReader As New JsonTextReader(New StreamReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return FimResponseReader.ReadFimResponse(jsonReader, s_defaultErrorHandler)
+                Return FimResponseReader.ReadFimResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
 
         Public Shared Function FromJson(json As String) As FimResponse
             Using jsonReader As New JsonTextReader(New StringReader(json))
                 jsonReader.DateParseHandling = DateParseHandling.None
-                Return FimResponseReader.ReadFimResponse(jsonReader, s_defaultErrorHandler)
+                Return FimResponseReader.ReadFimResponse(jsonReader, JsonReadErrorHandler.DefaultHandler)
             End Using
         End Function
     End Class ' FimResponse

@@ -29,9 +29,12 @@ Public Class ChatClient
     ''' </summary>
     ''' <param name="textRequestBody">The request message.</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>
@@ -47,9 +50,12 @@ Public Class ChatClient
     ''' <param name="textRequestBody">The request message.</param>
     ''' <param name="yieldCallback">The body of async for each loop.</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>
@@ -66,9 +72,12 @@ Public Class ChatClient
     ''' <param name="textRequestBody">The request message.</param>
     ''' <param name="yieldCallback">The body of async for each loop.</param>
     ''' <param name="cancellationToken">Use it to cancel the request.</param>
-    ''' <returns>The response message or error message.</returns>
+    ''' <returns>The response message.</returns>
+    ''' <exception cref="DeepSeekHttpRequestException">
+    ''' The request was not successful and the response contains a JSON.
+    ''' </exception>
     ''' <exception cref="HttpRequestException">
-    ''' The request was not successful and the response stream is empty.
+    ''' The request was not successful.
     ''' </exception>
     ''' <remarks>
     ''' <see href="https://api-docs.deepseek.com/api/create-chat-completion">Online documentation</see>

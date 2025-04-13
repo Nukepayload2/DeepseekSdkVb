@@ -224,4 +224,52 @@ Public Class CodeExamples
         Assert.IsTrue(finalResult.Contains("30"))
     End Function
 
+    <TestMethod>
+    Async Function TestFimAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim hole As String = Nothing
+        Dim fs As FormattableString = $"Dim sum As Integer = 0
+' 累加 1 到 10 的数字
+For i = 1 To 10
+{hole}
+Next
+Console.WriteLine($""从1加到10的结果是: {{sum}}"")"
+        Dim formatIndex = fs.Format.IndexOf("{0}")
+        Dim request As New FimRequest With {
+            .Model = ModelNames.ChatModel,
+            .Prompt = fs.Format.Substring(0, formatIndex),
+            .Suffix = fs.Format.Substring(formatIndex + 3),
+            .MaxTokens = 128
+        }
+        Dim resp = Await client.Beta.Fim.CompleteAsync(request)
+        hole = resp.Choices?.FirstOrDefault?.Text
+        Assert.IsTrue(hole.Contains("sum += i"))
+    End Function
+
+    <TestMethod>
+    Async Function TestFimStreamAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim hole As New StringBuilder
+        Dim fs As FormattableString = $"Dim sum As Integer = 0
+' 累加 1 到 10 的数字
+For i = 1 To 10
+{hole}
+Next
+Console.WriteLine($""从1加到10的结果是: {{sum}}"")"
+        Dim formatIndex = fs.Format.IndexOf("{0}")
+        Dim request As New FimRequest With {
+            .Model = ModelNames.ChatModel,
+            .Prompt = fs.Format.Substring(0, formatIndex),
+            .Suffix = fs.Format.Substring(formatIndex + 3),
+            .MaxTokens = 128,
+            .Stream = True
+        }
+        Await client.Beta.Fim.StreamAsync(request,
+            Sub(resp)
+                Dim streamText = resp.Choices?.FirstOrDefault?.Text
+                hole.Append(streamText)
+                Console.WriteLine($"{Environment.TickCount}: {streamText}")
+            End Sub)
+        Assert.IsTrue(hole.ToString.Contains("sum += i"))
+    End Function
 End Class

@@ -18,6 +18,7 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Authors>Nukepayload2</Authors>
     <PackageReleaseNotes>
+- Breaking change: Request errors are handled by exceptions instead of the ChatResponse class.
 - Upgrade Microsoft.Extensions.AI.Abstractions to 9.3.0-preview.1.25161.3
 - Fill-In-the-Middle completion (beta)
 - List models

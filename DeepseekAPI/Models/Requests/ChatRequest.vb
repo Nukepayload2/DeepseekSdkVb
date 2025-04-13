@@ -87,7 +87,7 @@ Namespace Models
         Public Function ToJsonUtf8() As MemoryStream
             Dim ms As New MemoryStream
             Using sw As New StreamWriter(ms, IoUtils.UTF8NoBOM, 8192, True), jsonWriter As New JsonTextWriter(sw)
-                RequestWriter.WriteChatRequest(jsonWriter, Me)
+                ChatRequestWriter.WriteChatRequest(jsonWriter, Me)
             End Using
             ms.Position = 0
             Return ms
@@ -95,7 +95,7 @@ Namespace Models
 
         Public Function ToJson() As String
             Using stringWriter = New StringWriter, jsonWriter = New JsonTextWriter(stringWriter)
-                RequestWriter.WriteChatRequest(jsonWriter, Me)
+                ChatRequestWriter.WriteChatRequest(jsonWriter, Me)
                 Return stringWriter.ToString()
             End Using
         End Function

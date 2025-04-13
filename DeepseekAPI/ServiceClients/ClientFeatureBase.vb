@@ -37,8 +37,36 @@ Public MustInherit Class ClientFeatureBase
             .RequestUri = New Uri(requestUrl),
             .Content = data
         }
-        request.Headers.Add("Authorization", "Bearer " & _apiKey)
+        With request.Headers
+            .Accept.TryParseAdd("application/json")
+            .Add("Authorization", "Bearer " & _apiKey)
+        End With
         Dim response = Await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation)
         Return response
+    End Function
+
+    Protected Async Function GetAsync(requestUrl As String, cancellation As CancellationToken) As Task(Of MemoryStream)
+        Dim request As New HttpRequestMessage With {
+            .Method = HttpMethod.Get,
+            .RequestUri = New Uri(requestUrl)
+        }
+        With request.Headers
+            .Accept.TryParseAdd("application/json")
+            .Add("Authorization", "Bearer " & _apiKey)
+        End With
+        Dim response = Await _client.SendAsync(request, cancellation)
+#If NET6_0_OR_GREATER Then
+        Dim stream = Await response.Content.ReadAsStreamAsync(cancellation)
+#Else
+        Dim stream = Await response.Content.ReadAsStreamAsync()
+#End If
+        Dim result As New MemoryStream
+        Await stream.CopyToAsync(result, 8192, cancellation)
+        result.Position = 0
+        If result.Length = 0 Then
+            ' 流里面没东西，请求又失败了，错误信息就从 HTTP 响应里面取
+            response.EnsureSuccessStatusCode()
+        End If
+        Return result
     End Function
 End Class

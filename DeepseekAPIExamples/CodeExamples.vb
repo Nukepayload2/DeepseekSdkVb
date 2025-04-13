@@ -56,6 +56,13 @@ Public Class CodeExamples
     End Function
 
     <TestMethod>
+    Async Function TestListModelsAsync() As Task
+        Dim client As New DeepSeekClient(ApiKey)
+        Dim result = Await client.Model.ListModelsAsync
+        Assert.IsTrue(result.Data.Any(Function(it) it.Id = ModelNames.ChatModel))
+    End Function
+
+    <TestMethod>
     Async Function TestStreamErrorHandlingAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
         Dim sb As New StringBuilder

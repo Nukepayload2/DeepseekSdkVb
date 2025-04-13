@@ -10,7 +10,7 @@ Imports Nukepayload2.AI.Providers.Deepseek.Models
 Imports Newtonsoft.Json.Linq
 
 Namespace Serialization
-    Partial Class RequestWriter
+    Partial Class ChatRequestWriter
 
         ''' <summary>
         ''' Writes <see cref="ChatRequest"/> to JsonWriter.
@@ -265,7 +265,7 @@ Namespace Serialization
                 writer.WriteStartObject()
                 For Each prop In value.Properties
                     writer.WritePropertyName(prop.Key)
-                    WriteFunctionParameterDescriptor(writer, prop.Value)
+                WriteFunctionParameterDescriptor(writer, prop.Value)
                 Next
                 writer.WriteEndObject()
             End If
@@ -462,5 +462,5 @@ Namespace Serialization
             End If
         End Sub ' WriteStringOrObjectOfNamedToolChoice
 
-    End Class ' RequestWriter
+    End Class ' ChatRequestWriter
 End Namespace

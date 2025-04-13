@@ -52,13 +52,13 @@ Namespace Models
 
         Public Shared Function FromJson(json As Stream) As ChatResponse
             Using jsonReader As New JsonTextReader(New StreamReader(json))
-                Return ResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
+                Return ChatResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
             End Using
         End Function
 
         Public Shared Function FromJson(json As String) As ChatResponse
             Using jsonReader As New JsonTextReader(New StringReader(json))
-                Return ResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
+                Return ChatResponseReader.ReadChatResponse(jsonReader, s_defaultErrorHandler)
             End Using
         End Function
     End Class

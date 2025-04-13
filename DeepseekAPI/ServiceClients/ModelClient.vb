@@ -10,10 +10,10 @@ Public Class ModelClient
         MyBase.New(apiKey, client)
     End Sub
 
-    Protected Overridable ReadOnly Property ListModelsRequestUrl As String = "https://api.deepseek.com/models"
+    Protected Overridable ReadOnly Property RequestUrl As String = "https://api.deepseek.com/models"
 
     Public Async Function ListModelsAsync(Optional cancellationToken As CancellationToken = Nothing) As Task(Of ListModelResponse)
-        Dim json = Await GetAsync(ListModelsRequestUrl, cancellationToken)
+        Dim json = Await GetAsync(RequestUrl, cancellationToken)
         Dim tmp = Encoding.UTF8.GetString(json.ToArray)
         Return ListModelResponse.FromJson(json)
     End Function

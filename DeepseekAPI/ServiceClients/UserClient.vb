@@ -9,10 +9,10 @@ Public Class UserClient
         MyBase.New(apiKey, client)
     End Sub
 
-    Protected Overridable ReadOnly Property UserBalanceRequestUrl As String = "https://api.deepseek.com/user/balance"
+    Protected Overridable ReadOnly Property RequestUrl As String = "https://api.deepseek.com/user/balance"
 
     Public Async Function GetUserBalanceAsync(Optional cancellationToken As CancellationToken = Nothing) As Task(Of UserBalanceResponse)
-        Dim json = Await GetAsync(UserBalanceRequestUrl, cancellationToken)
+        Dim json = Await GetAsync(RequestUrl, cancellationToken)
         Return UserBalanceResponse.FromJson(json)
     End Function
 End Class

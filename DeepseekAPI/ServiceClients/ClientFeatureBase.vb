@@ -13,16 +13,20 @@ Public MustInherit Class ClientFeatureBase
         _client = If(client, DeepSeekClient.DefaultHttpClient)
     End Sub
 
-    Protected Async Function PostAsync(requestUrl As String, json As Stream, cancellation As CancellationToken) As Task(Of MemoryStream)
-        Dim response As HttpResponseMessage = Await PostRawAsync(requestUrl, json, cancellation)
+    Protected Async Function ReadAndCheckErrorAsync(response As HttpResponseMessage, cancellation As CancellationToken) As Task(Of MemoryStream)
         Dim result = Await IoUtils.CopyToMemoryStreamAsync(response, cancellation)
         ErrorHandler.ThrowForNonSuccess(response, result)
         Return result
     End Function
 
-    Protected Async Function PostRawAsync(requestUrl As String, json As Stream, cancellation As CancellationToken) As Task(Of HttpResponseMessage)
+    Protected Async Function PostAsync(requestUrl As String, json As Stream, cancellation As CancellationToken) As Task(Of MemoryStream)
         Dim data As New StreamContent(json)
         data.Headers.ContentType = New Headers.MediaTypeHeaderValue("application/json")
+        Dim response As HttpResponseMessage = Await PostRawAsync(requestUrl, data, cancellation)
+        Return Await ReadAndCheckErrorAsync(response, cancellation)
+    End Function
+
+    Protected Async Function PostRawAsync(requestUrl As String, data As HttpContent, cancellation As CancellationToken) As Task(Of HttpResponseMessage)
         Dim request As New HttpRequestMessage With {
             .Method = HttpMethod.Post,
             .RequestUri = New Uri(requestUrl),
@@ -46,9 +50,7 @@ Public MustInherit Class ClientFeatureBase
             .Add("Authorization", "Bearer " & _apiKey)
         End With
         Dim response = Await _client.SendAsync(request, cancellation)
-        Dim result = Await IoUtils.CopyToMemoryStreamAsync(response, cancellation)
-        ErrorHandler.ThrowForNonSuccess(response, result)
-        Return result
+        Return Await ReadAndCheckErrorAsync(response, cancellation)
     End Function
 
 End Class

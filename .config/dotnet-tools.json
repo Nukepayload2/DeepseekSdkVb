@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "nukepayload2.tools.docfx2vb": {
+      "version": "2.78.2",
+      "commands": [
+        "docfx2vb"
+      ],
+      "rollForward": false
+    }
+  }
+}

@@ -33,8 +33,8 @@
     ],
     "output": "_site",
     "template": [
-      "templates/default-vb-declaration",
-      "templates/modern-vb-declaration"
+      "default-vb-declaration",
+      "modern-vb-declaration"
     ],
     "globalMetadata": {
       "_appName": "DeepSeekVbNetClient",

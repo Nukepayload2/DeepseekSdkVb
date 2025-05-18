@@ -16,11 +16,8 @@ Get on NuGet: [Nukepayload2.AI.Providers.Deepseek](https://www.nuget.org/package
 - .NET Standard 2.0
 - .NET 8 or later
 
-## Progress
-It's currently in release candidate stage. 
-We reserve the rights of **making breaking changes** before RTM.
-
-### Implementation
+## Features
+### DeepSeek Client
 - [x] Text completion
 - [x] Text streaming
 - [x] Tool call in completion
@@ -29,23 +26,8 @@ We reserve the rights of **making breaking changes** before RTM.
 - [x] List models
 - [x] Get balance
 
-### Tested Manually
-- [x] Text completion
-- [x] Text streaming
-- [x] Tool call in completion
-- [x] Tool call in streaming
-- [x] Fill-In-the-Middle completion (beta)
-- [x] List models
-- [x] Get balance
-
-### Microsoft.Extension.AI 9.0.3 Preview
+### Microsoft.Extension.AI 9.0.5
 - [x] Chat completion
 - [x] Chat streaming
-- [x] Tool call in completion
-- [x] Tool call in streaming
-
-### Tested Manually with Microsoft.Extension.AI
-- [x] Text completion
-- [x] Text streaming
 - [x] Tool call in completion
 - [x] Tool call in streaming

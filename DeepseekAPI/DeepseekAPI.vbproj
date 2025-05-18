@@ -18,7 +18,7 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Authors>Nukepayload2</Authors>
     <PackageReleaseNotes>
-- Upgrade Microsoft.Extensions.AI.Abstractions to 9.5.0
+- Upgraded `Microsoft.Extensions.AI.Abstractions` to `9.5.0`
     </PackageReleaseNotes>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <InheritDocTrimLevel>internal</InheritDocTrimLevel>

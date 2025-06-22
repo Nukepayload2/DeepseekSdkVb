@@ -23,8 +23,18 @@ Namespace Utils
 #If NET6_0_OR_GREATER Then
             Dim stream = Await response.Content.ReadAsStreamAsync(cancellation)
 #Else
-        Dim stream = Await response.Content.ReadAsStreamAsync()
+            Dim stream = Await response.Content.ReadAsStreamAsync()
 #End If
+            Dim result As New MemoryStream
+            Await stream.CopyToAsync(result, 8192, cancellation)
+            result.Position = 0
+            Return result
+        End Function
+
+        Public Shared Async Function ToMemoryStreamAsync(stream As Stream, cancellation As CancellationToken) As Task(Of MemoryStream)
+            If TypeOf stream Is MemoryStream Then
+                Return DirectCast(stream, MemoryStream)
+            End If
             Dim result As New MemoryStream
             Await stream.CopyToAsync(result, 8192, cancellation)
             result.Position = 0

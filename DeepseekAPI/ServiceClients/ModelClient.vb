@@ -2,6 +2,7 @@
 Imports System.Text
 Imports System.Threading
 Imports Nukepayload2.AI.Providers.Deepseek.Models
+Imports Nukepayload2.AI.Providers.Deepseek.Utils
 
 Public Class ModelClient
     Inherits ClientFeatureBase
@@ -14,7 +15,8 @@ Public Class ModelClient
 
     Public Async Function ListModelsAsync(Optional cancellationToken As CancellationToken = Nothing) As Task(Of ListModelResponse)
         Dim json = Await GetAsync(RequestUrl, cancellationToken)
-        Dim tmp = Encoding.UTF8.GetString(json.ToArray)
+        Dim ms = Await IoUtils.ToMemoryStreamAsync(json, cancellationToken)
+        Dim tmp = Encoding.UTF8.GetString(ms.ToArray)
         Return ListModelResponse.FromJson(json)
     End Function
 

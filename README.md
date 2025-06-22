@@ -21,7 +21,7 @@ Get on NuGet: [Nukepayload2.AI.Providers.Deepseek](https://www.nuget.org/package
 - [x] Text completion
 - [x] Text streaming
 - [x] Tool call in completion
-- [x] Tool call in streaming (requires DeepSeek-V3-0324 or later)
+- [x] Tool call in streaming
 - [x] Fill-In-the-Middle completion (beta)
 - [x] List models
 - [x] Get balance

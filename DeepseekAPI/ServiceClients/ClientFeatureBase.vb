@@ -13,13 +13,20 @@ Public MustInherit Class ClientFeatureBase
         _client = If(client, DeepSeekClient.DefaultHttpClient)
     End Sub
 
-    Protected Async Function ReadAndCheckErrorAsync(response As HttpResponseMessage, cancellation As CancellationToken) As Task(Of MemoryStream)
+    Protected Async Function ReadAndCheckErrorAsync(response As HttpResponseMessage, cancellation As CancellationToken) As Task(Of Stream)
+        If response.StatusCode = Net.HttpStatusCode.OK Then
+#If NET5_0_OR_GREATER Then
+            Return Await response.Content.ReadAsStreamAsync(cancellation)
+#Else
+            Return Await response.Content.ReadAsStreamAsync()
+#End If
+        End If
         Dim result = Await IoUtils.CopyToMemoryStreamAsync(response, cancellation)
         ErrorHandler.ThrowForNonSuccess(response, result)
         Return result
     End Function
 
-    Protected Async Function PostAsync(requestUrl As String, json As Stream, cancellation As CancellationToken) As Task(Of MemoryStream)
+    Protected Async Function PostAsync(requestUrl As String, json As Stream, cancellation As CancellationToken) As Task(Of Stream)
         Dim data As New StreamContent(json)
         data.Headers.ContentType = New Headers.MediaTypeHeaderValue("application/json")
         Dim response As HttpResponseMessage = Await PostRawAsync(requestUrl, data, cancellation)
@@ -40,7 +47,7 @@ Public MustInherit Class ClientFeatureBase
         Return response
     End Function
 
-    Protected Async Function GetAsync(requestUrl As String, cancellation As CancellationToken) As Task(Of MemoryStream)
+    Protected Async Function GetAsync(requestUrl As String, cancellation As CancellationToken) As Task(Of Stream)
         Dim request As New HttpRequestMessage With {
             .Method = HttpMethod.Get,
             .RequestUri = New Uri(requestUrl)

@@ -1,4 +1,4 @@
-# DeepseekSdkVb
+﻿# DeepseekSdkVb
 VB-friendly .NET bindings for Deepseek API. It's part of the Nukepayload2 VB AI SDK as a model provider.
 
 - [x] Enumerate result asynchronously with the syntax introduced in VB 11.
@@ -25,9 +25,11 @@ Get on NuGet: [Nukepayload2.AI.Providers.Deepseek](https://www.nuget.org/package
 - [x] Fill-In-the-Middle completion (beta)
 - [x] List models
 - [x] Get balance
+- [x] Tool call while thinking
 
-### Microsoft.Extensions.AI 9.0.5
+### Microsoft.Extensions.AI 10.4.1
 - [x] Chat completion
 - [x] Chat streaming
 - [x] Tool call in completion
 - [x] Tool call in streaming
+- [x] Tool call while thinking

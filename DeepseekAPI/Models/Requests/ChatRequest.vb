@@ -331,8 +331,9 @@ Namespace Models
     ''' </summary>
     Public Class ModelNames
         ''' <summary>
-        ''' 聊天模型 ID "deepseek-chat"
+        ''' 聊天模型 ID "deepseek-chat" 对应 Flash 模型的非思考模式
         ''' </summary>
+        <Obsolete("于 2026/07/24 弃用")>
         Public Shared ReadOnly Property ChatModel As String = "deepseek-chat"
 
         ''' <summary>
@@ -341,8 +342,9 @@ Namespace Models
         Public Shared ReadOnly Property CoderModel As String = "deepseek-coder"
 
         ''' <summary>
-        ''' 推理模型 ID "deepseek-reasoner"
+        ''' 推理模型 ID "deepseek-reasoner" 对应 Flash 模型的思考模式
         ''' </summary>
+        <Obsolete("于 2026/07/24 弃用")>
         Public Shared ReadOnly Property ReasonerModel As String = "deepseek-reasoner"
 
         ''' <summary>

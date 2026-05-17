@@ -1,4 +1,5 @@
-﻿Imports System.IO
+﻿Imports System.ComponentModel
+Imports System.IO
 Imports Newtonsoft.Json
 Imports Nukepayload2.AI.Providers.Deepseek.Serialization
 Imports Nukepayload2.IO.Json.Serialization.NewtonsoftJson
@@ -159,7 +160,7 @@ Namespace Models
         ''' </summary>
         Public Property Content As String
         ''' <summary>
-        ''' 仅适用于 deepseek-reasoner 模型。内容为 assistant 消息中在最终答案之前的推理内容。
+        ''' 仅适用于思考模式。内容为 assistant 消息中在最终答案之前的推理内容。
         ''' </summary>
         Public Property ReasoningContent As String
         ''' <summary>
@@ -262,8 +263,14 @@ Namespace Models
         ''' </summary>
         Public Property TotalTokens As Integer?
         ''' <summary>
-        ''' completion tokens 的详细信息。
+        ''' 关于输出用量的详细信息。
         ''' </summary>
+        Public Property CompletionTokensDetails As CompletionTokensDetails
+        ''' <summary>
+        ''' 关于输入用量的详细信息（文档未记载此 API）
+        ''' </summary>
+        Public Property PromptTokensDetails As CompletionTokensDetails
+        <Obsolete("Use PromptTokensDetails/CompletionTokensDetails instead"), EditorBrowsable(EditorBrowsableState.Never)>
         Public Property Details As CompletionTokensDetails
 
     End Class
@@ -273,6 +280,9 @@ Namespace Models
         ''' 推理模型所产生的思维链 token 数量
         ''' </summary>
         Public Property ReasoningTokens As Integer?
+        ''' <summary>
+        ''' 输入缓存 token 数量（文档未记载此 API）
+        ''' </summary>
         Public Property CachedTokens As Integer?
 
     End Class

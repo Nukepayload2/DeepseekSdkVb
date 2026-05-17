@@ -20,7 +20,7 @@ Public Class CodeExamples
     Async Function TestCompletionAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
         Dim request As New ChatRequest With {
-            .Model = ModelNames.ChatModel,
+            .Model = ModelNames.V4Flash,
             .Messages = {New ChatMessage(ChatRoles.User, "你好，你是谁？")},
             .TopP = 0.9
         }
@@ -37,7 +37,7 @@ Public Class CodeExamples
         Dim sb As New StringBuilder
         Await client.Chat.StreamAsync(
             New ChatRequest With {
-                .Model = ModelNames.ChatModel,
+                .Model = ModelNames.V4Flash,
                 .Messages = {New ChatMessage(ChatRoles.User, "1+1等于多少"),
                               New ChatMessage(ChatRoles.Assistant, "1+1等于2。"),
                               New ChatMessage(ChatRoles.User, "再加2呢？")},
@@ -45,9 +45,14 @@ Public Class CodeExamples
                 .Stream = True
             },
             Sub(resp)
-                Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
+                Dim delta = resp.Choices?.FirstOrDefault?.Delta
+                Dim respMessage = delta?.Content
                 If respMessage <> Nothing Then
                     sb.AppendLine($"{Environment.TickCount}: {respMessage}")
+                End If
+                Dim thinkMessage = delta?.ReasoningContent
+                If thinkMessage <> Nothing Then
+                    sb.AppendLine($"[Think {Environment.TickCount}]: {thinkMessage}")
                 End If
             End Sub)
 
@@ -59,7 +64,7 @@ Public Class CodeExamples
     Async Function TestListModelsAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
         Dim result = Await client.Model.ListModelsAsync
-        Assert.IsTrue(result.Data.Any(Function(it) it.Id = ModelNames.ChatModel))
+        Assert.IsTrue(result.Data.Any(Function(it) it.Id = ModelNames.V4Flash))
     End Function
 
     <TestMethod>
@@ -100,7 +105,7 @@ Public Class CodeExamples
         Dim client As New DeepSeekClient(ApiKey)
         Dim response = Await client.Chat.CompleteAsync(
             New ChatRequest With {
-                .Model = ModelNames.ChatModel,
+                .Model = ModelNames.V4Flash,
                 .Messages = {
                     New ChatMessage(ChatRoles.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
                     New ChatMessage(ChatRoles.User, "能帮我查天气吗？"),
@@ -131,7 +136,7 @@ Public Class CodeExamples
         ' 有时候不会返回工具调用信息，得手动多试几次。
         Dim respMessage = response.Choices?.FirstOrDefault?.Message?.ToolCalls?.FirstOrDefault.FunctionCall
         Assert.AreEqual("get_weather", respMessage?.Name)
-        Assert.AreEqual("{""city"":""北京"",""days"":0}", respMessage?.Arguments)
+        Assert.AreEqual("{""city"": ""北京"", ""days"": 0}", respMessage?.Arguments)
     End Function
 
     <TestMethod>
@@ -147,11 +152,13 @@ Public Class CodeExamples
             New ChatMessage(ChatRoles.User, "就今天一天的")
         }
         Dim lastToolCall As ToolCall = Nothing
+        Dim lastReasoning As New StringBuilder
         Dim onResponse =
             Sub(resp As ChatResponse)
                 ' 文档没写这个时候工具调用信息在哪，也没写原生 HTTP 请求怎么工具调用，下面的代码是猜的。最后猜测时间是 2025-02-12 21:00。
                 ' https://api-docs.deepseek.com/zh-cn/api/create-chat-completion/
-                Dim toolCall = resp.Choices?.FirstOrDefault?.Delta?.ToolCalls?.FirstOrDefault
+                Dim delta = resp.Choices?.FirstOrDefault?.Delta
+                Dim toolCall = delta?.ToolCalls?.FirstOrDefault
                 If toolCall IsNot Nothing Then
                     If lastToolCall?.FunctionCall IsNot Nothing AndAlso toolCall?.FunctionCall IsNot Nothing Then
                         lastToolCall.FunctionCall.Arguments &= toolCall.FunctionCall.Arguments
@@ -162,13 +169,18 @@ Public Class CodeExamples
                     End If
                     Return
                 End If
-                Dim respMessage = resp.Choices?.FirstOrDefault?.Delta?.Content
+                Dim respMessage = delta?.Content
                 If respMessage <> Nothing Then
                     sb.AppendLine($"{Environment.TickCount}: {respMessage}")
                 End If
+                Dim thinkMessage = delta?.ReasoningContent
+                If thinkMessage <> Nothing Then
+                    sb.AppendLine($"[Think {Environment.TickCount}]: {thinkMessage}")
+                    lastReasoning.Append(thinkMessage)
+                End If
             End Sub
         Dim requestParams As New ChatRequest With {
-            .Model = ModelNames.ChatModel,
+            .Model = ModelNames.V4Flash,
             .Messages = messages,
             .Tools = {
                 New AICallableTool With {
@@ -190,7 +202,6 @@ Public Class CodeExamples
             .Stream = True
         }
 
-        ' 当前版本 deepseek-chat 模型 Function Calling 功能效果不稳定，会出现循环调用、空回复的情况，这里我们重试最多十次。
         Await client.Chat.StreamAsync(requestParams, onResponse)
         Dim retry = 0
         Do While lastToolCall IsNot Nothing AndAlso Interlocked.Increment(retry) <= 10
@@ -199,9 +210,9 @@ Public Class CodeExamples
                 ' 在这里返回了示例数据，实际应用中应当进行异步查询请求，并返回真实数据。
                 If lastToolCallFunc.Name = "get_weather" AndAlso lastToolCallFunc.Arguments?.Contains("北京") Then
                     Dim callResult = "晴天，30 摄氏度。"
-                    ' 这部分官方没写文档，照着 OpenAI 的文档来了。
-                    ' https://community.openai.com/t/formatting-assistant-messages-after-tool-function-calls-in-gpt-conversations/535360/3
-                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = {lastToolCall}})
+                    Dim think = lastReasoning.ToString
+                    lastReasoning.Clear()
+                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = {lastToolCall}, .ReasoningContent = think})
                     messages.Add(New ChatMessage(ChatRoles.Tool, callResult) With {.ToolCallId = lastToolCall.Id, .Name = "get_weather"})
                     lastToolCall = Nothing
                     Await client.Chat.StreamAsync(requestParams, onResponse)
@@ -227,7 +238,7 @@ Next
 Console.WriteLine($""从1加到10的结果是: {{sum}}"")"
         Dim formatIndex = fs.Format.IndexOf("{0}")
         Dim request As New FimRequest With {
-            .Model = ModelNames.ChatModel,
+            .Model = ModelNames.V4Flash,
             .Prompt = fs.Format.Substring(0, formatIndex),
             .Suffix = fs.Format.Substring(formatIndex + 3),
             .MaxTokens = 128
@@ -266,7 +277,7 @@ Next
 Console.WriteLine($""从1加到10的结果是: {{sum}}"")"
         Dim formatIndex = fs.Format.IndexOf("{0}")
         Dim request As New FimRequest With {
-            .Model = ModelNames.ChatModel,
+            .Model = ModelNames.V4Flash,
             .Prompt = fs.Format.Substring(0, formatIndex),
             .Suffix = fs.Format.Substring(formatIndex + 3),
             .MaxTokens = 128,

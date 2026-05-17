@@ -19,7 +19,7 @@ Public Class MsAICodeExamples
     <TestMethod>
     Async Function TestMicrosoftAICompletionAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.V4Flash).GetResponseAsync(
             {New ChatMessage(ChatRole.User, "你好，你是谁？")},
              New ChatOptions With {.Temperature = 0.7F, .TopP = 0.7F}
         )
@@ -32,7 +32,7 @@ Public Class MsAICodeExamples
     <TestMethod>
     Async Function TestMicrosoftAICompletionNoOptionsAsync() As Task
         Dim client As New DeepSeekClient(ApiKey)
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.V4Flash).GetResponseAsync(
             {New ChatMessage(ChatRole.User, "你好，你是谁？")}
         )
 
@@ -48,7 +48,7 @@ Public Class MsAICodeExamples
                         New ChatMessage(ChatRole.Assistant, "1+1等于2。"),
                         New ChatMessage(ChatRole.User, "再加2呢？")}
         Dim options As New ChatOptions With {.Temperature = 0.7F, .TopP = 0.7F}
-        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetStreamingResponseAsync(messages, options)
+        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.V4Flash).GetStreamingResponseAsync(messages, options)
         ' 在 VB 支持简化的 IAsyncEnumerable 调用 (Await Each 语句) 之前可以用 System.Linq.Async 读取服务端回复的数据。
         Dim sb As New StringBuilder
         Await respAsyncEnumerate.ForEachAsync(
@@ -136,7 +136,7 @@ Public Class MsAICodeExamples
             .Temperature = 0.6F, .TopP = 0.95F, .ToolMode = ChatToolMode.Auto,
             .Tools = {tool}
         }
-        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetResponseAsync(
+        Dim response = Await client.Chat.AsChatClient(Models.ModelNames.V4Flash).GetResponseAsync(
             {
                 New ChatMessage(ChatRole.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
                 New ChatMessage(ChatRole.User, "能帮我查天气吗？"),
@@ -170,7 +170,7 @@ Public Class MsAICodeExamples
             .Temperature = 0.7F, .TopP = 0.7F, .ToolMode = ChatToolMode.Auto,
             .Tools = {tool}
         }
-        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.ChatModel).GetStreamingResponseAsync(
+        Dim respAsyncEnumerate = client.Chat.AsChatClient(Models.ModelNames.V4Flash).GetStreamingResponseAsync(
             {
                 New ChatMessage(ChatRole.System, "不要假设或猜测传入函数的参数值。如果用户的描述不明确，请要求用户提供必要信息"),
                 New ChatMessage(ChatRole.User, "能帮我查天气吗？"),

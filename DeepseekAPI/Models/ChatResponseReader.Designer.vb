@@ -835,9 +835,18 @@ Namespace Serialization
                                     Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
                                 End If
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
-                                    entity.Details = Nothing
+                                    entity.PromptTokensDetails = Nothing
                                 Else
-                                    entity.Details = ReadCompletionTokensDetails(reader, readState)
+                                    entity.PromptTokensDetails = ReadCompletionTokensDetails(reader, readState)
+                                End If
+                            Case "completion_tokens_details"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.CompletionTokensDetails = Nothing
+                                Else
+                                    entity.CompletionTokensDetails = ReadCompletionTokensDetails(reader, readState)
                                 End If
                             Case Else
                                 readState.OnMissingProperty("Usage", name, reader)

@@ -15,7 +15,7 @@ Namespace Models
         ''' 模型的 ID
         ''' </summary>
         ''' <value>
-        ''' Can be value of <c>"deepseek-chat"</c>
+        ''' Can be value of <c>"deepseek-v4-pro"</c>
         ''' </value>
         ''' <remarks>
         ''' Reads or writes <c>model</c> in json.
@@ -47,6 +47,7 @@ Namespace Models
         ''' <remarks>
         ''' Reads or writes <c>frequency_penalty</c> in json.
         ''' </remarks>
+        <Obsolete("此参数已被 DeepSeek API 废弃。")>
         Public Property FrequencyPenalty As Double?
         ''' <summary>
         ''' 返回最多 logprobs 个最可能 token 的对数概率。例如，logprobs=20 会返回20个最可能 token，API 还会包含采样 token 的对数概率，最多返回 logprobs+1 个元素。
@@ -71,6 +72,7 @@ Namespace Models
         ''' <remarks>
         ''' Reads or writes <c>presence_penalty</c> in json.
         ''' </remarks>
+        <Obsolete("此参数已被 DeepSeek API 废弃。")>
         Public Property PresencePenalty As Double?
         ''' <summary>
         ''' 停止生成的词或词列表（最多 16 个字符串）。当遇到这些词时，API 停止生成更多 token。

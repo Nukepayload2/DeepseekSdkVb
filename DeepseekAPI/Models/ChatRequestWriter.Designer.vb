@@ -66,6 +66,18 @@ Namespace Serialization
                 writer.WritePropertyName("stream_options")
                 WriteStreamOptions(writer, value.StreamOptions)
             End If
+            If value.Thinking IsNot Nothing Then
+                writer.WritePropertyName("thinking")
+                WriteThinkingConfig(writer, value.Thinking)
+            End If
+            If value.ReasoningEffort IsNot Nothing Then
+                writer.WritePropertyName("reasoning_effort")
+                writer.WriteValue(value.ReasoningEffort)
+            End If
+            If value.UserId IsNot Nothing Then
+                writer.WritePropertyName("user_id")
+                writer.WriteValue(value.UserId)
+            End If
             If value.Temperature IsNot Nothing Then
                 writer.WritePropertyName("temperature")
                 writer.WriteValue(value.Temperature)
@@ -242,6 +254,10 @@ Namespace Serialization
                 writer.WritePropertyName("parameters")
                 WriteFunctionParameters(writer, value.Parameters)
             End If
+            If value.Strict IsNot Nothing Then
+                writer.WritePropertyName("strict")
+                writer.WriteValue(value.Strict)
+            End If
 
             writer.WriteEndObject()
         End Sub ' WriteFunctionMetadata
@@ -364,6 +380,24 @@ Namespace Serialization
 
             writer.WriteEndObject()
         End Sub ' WriteStreamOptions
+
+        ''' <summary>
+        ''' Writes <see cref="ThinkingConfig"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteThinkingConfig(writer As Global.Newtonsoft.Json.JsonWriter, value As ThinkingConfig)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartObject()
+            If value.Type IsNot Nothing Then
+                writer.WritePropertyName("type")
+                writer.WriteValue(value.Type)
+            End If
+
+            writer.WriteEndObject()
+        End Sub ' WriteThinkingConfig
 
         ''' <summary>
         ''' Writes array of <see cref="ChatMessage"/> to JsonWriter.

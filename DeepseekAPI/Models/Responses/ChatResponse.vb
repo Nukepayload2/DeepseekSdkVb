@@ -181,6 +181,11 @@ Namespace Models
         ''' 包含输出 token 对数概率信息的列表
         ''' </summary>
         Public Property Content As IReadOnlyList(Of LogprobsContent)
+
+        ''' <summary>
+        ''' 包含推理 token 对数概率信息的列表
+        ''' </summary>
+        Public Property ReasoningContent As IReadOnlyList(Of LogprobsContent)
     End Class
 
     ''' <summary>

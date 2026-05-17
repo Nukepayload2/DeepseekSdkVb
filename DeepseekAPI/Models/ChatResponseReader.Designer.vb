@@ -485,6 +485,15 @@ Namespace Serialization
                                 Else
                                     entity.Content = ReadIReadOnlyListOfLogprobsContent(reader, readState)
                                 End If
+                            Case "reasoning_content"
+                                If Not reader.Read() Then
+                                    Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
+                                End If
+                                If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
+                                    entity.ReasoningContent = Nothing
+                                Else
+                                    entity.ReasoningContent = ReadIReadOnlyListOfLogprobsContent(reader, readState)
+                                End If
                             Case Else
                                 readState.OnMissingProperty("Logprobs", name, reader)
                         End Select

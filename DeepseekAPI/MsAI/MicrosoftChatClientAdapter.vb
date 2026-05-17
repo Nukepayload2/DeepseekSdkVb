@@ -1,4 +1,5 @@
-﻿Imports System.Threading
+﻿Imports System.Text
+Imports System.Threading
 Imports Microsoft.Extensions.AI
 Imports Newtonsoft.Json.Linq
 Imports Nukepayload2.AI.Providers.Deepseek.Models
@@ -42,7 +43,9 @@ Public Class MicrosoftChatClientAdapter
             .Temperature = ToDoubleWithRounding((options?.Temperature)),
             .TopP = ToDoubleWithRounding((options?.TopP)),
             .ToolChoice = ConvertToolChoice((options?.Tools), (options?.ToolMode)),
-            .Tools = ConvertTools((options?.Tools))
+            .Tools = ConvertTools((options?.Tools)),
+            .Thinking = ConvertThinkingConfig(options?.Reasoning),
+            .ReasoningEffort = ConvertReasoningEffort(options?.Reasoning?.Effort)
         }
         Return Await CompleteInternalAsync(chatMessages, options, request, 1, cancellationToken)
     End Function
@@ -58,7 +61,10 @@ Public Class MicrosoftChatClientAdapter
             If toolCalls IsNot Nothing AndAlso toolCalls.Count > 0 Then
                 Dim messages = DirectCast(request.Messages, List(Of ChatMessage))
                 Dim msgList = If(attemptCount > 1, DirectCast(chatMessages, List(Of MSChatMessage)), chatMessages.ToList)
-                messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = toolCalls})
+                messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {
+                    .ToolCalls = toolCalls,
+                    .ReasoningContent = response.Choices?.FirstOrDefault?.Message?.ReasoningContent
+                })
                 Dim toolResponseAdded = Await TryAddToolCallMessages(msgList, messages, options, toolCalls, cancellationToken)
                 If toolResponseAdded AndAlso attemptCount < ToolCallMaxRetry Then
                     Return Await CompleteInternalAsync(msgList, options, request, attemptCount + 1, cancellationToken)
@@ -70,8 +76,37 @@ Public Class MicrosoftChatClientAdapter
             (From choice In response.Choices
              Let msg = choice.Message
              Where msg IsNot Nothing
-             Select New MSChatMessage(New ChatRole(msg.Role), msg.Content)
+             Select ConvertResponseMessage(msg)
             ).ToArray) With {.FinishReason = ConvertFinishReason(response.Choices)}
+    End Function
+
+    Private Shared Function ConvertResponseMessage(msg As ResponseMessage) As MSChatMessage
+        Dim contents As New List(Of AIContent)
+        If msg.ReasoningContent IsNot Nothing Then
+            contents.Add(New TextReasoningContent(msg.ReasoningContent))
+        End If
+        contents.Add(New TextContent(msg.Content))
+        Return New MSChatMessage(New ChatRole(msg.Role), contents)
+    End Function
+
+    Private Shared Function ConvertReasoningEffort(effort As ReasoningEffort?) As String
+        If effort Is Nothing Then Return Nothing
+        Select Case effort.Value
+            Case ReasoningEffort.ExtraHigh
+                Return "max"
+            Case ReasoningEffort.None
+                Return Nothing
+            Case Else
+                Return "high"
+        End Select
+    End Function
+
+    Private Shared Function ConvertThinkingConfig(reasoning As ReasoningOptions) As ThinkingConfig
+        If reasoning Is Nothing Then Return Nothing
+        If reasoning.Output IsNot Nothing AndAlso reasoning.Output.Value <> ReasoningOutput.None Then
+            Return New ThinkingConfig With {.Type = "enabled"}
+        End If
+        Return Nothing
     End Function
 
     Private Shared Function ConvertFinishReason(choices As IReadOnlyList(Of Choice)) As ChatFinishReason?
@@ -120,8 +155,10 @@ Public Class MicrosoftChatClientAdapter
     End Function
 
     Private Shared Function ConvertMessage(msg As MSChatMessage) As ChatMessage
+        Dim reasoning = msg.Contents.OfType(Of TextReasoningContent).FirstOrDefault()
         Return New ChatMessage(msg.Role.Value, msg.Text) With {
-            .ToolCallId = TryCast(msg.AdditionalProperties?!tool_call_id, String)
+            .ToolCallId = TryCast(msg.AdditionalProperties?!tool_call_id, String),
+            .ReasoningContent = reasoning?.Text
         }
     End Function
 
@@ -226,13 +263,16 @@ Public Class MicrosoftChatClientAdapter
             .TopP = ToDoubleWithRounding(options?.TopP),
             .ToolChoice = ConvertToolChoice(options?.Tools, options?.ToolMode),
             .Tools = ConvertTools(options?.Tools),
-            .Stream = True
+            .Stream = True,
+            .Thinking = ConvertThinkingConfig(options?.Reasoning),
+            .ReasoningEffort = ConvertReasoningEffort(options?.Reasoning?.Effort)
         }
         Dim builder As New AsyncEnumerableAdapter(Of ChatResponseUpdate).Builder With {
             .ReturnAsync =
             Async Function(enumerator)
                 Dim funcCallByName As Dictionary(Of String, ToolCall) = Nothing
                 Dim funcCalls As List(Of ToolCall) = Nothing
+                Dim reasoningBuilder As New StringBuilder
                 Dim onResponse =
                 Sub(resp As ChatResponse)
                     Dim delta = resp.Choices?.FirstOrDefault?.Delta
@@ -254,6 +294,15 @@ Public Class MicrosoftChatClientAdapter
                         Next
                         Return
                     End If
+                    Dim reasoningContent = delta?.ReasoningContent
+                    If reasoningContent <> Nothing Then
+                        reasoningBuilder.Append(reasoningContent)
+                        Dim role = If(delta.Role Is Nothing, ChatRole.Assistant, New ChatRole(delta.Role))
+                        Dim converted As New ChatResponseUpdate(role, New AIContent() {New TextReasoningContent(reasoningContent)}) With {
+                            .FinishReason = ConvertFinishReason(resp.Choices)
+                        }
+                        enumerator.YieldValue(converted)
+                    End If
                     Dim respMessage = delta?.Content
                     If respMessage <> Nothing Then
                         Dim role = If(delta.Role Is Nothing, ChatRole.Assistant, New ChatRole(delta.Role))
@@ -268,7 +317,10 @@ Public Class MicrosoftChatClientAdapter
                 Dim retry = 0
                 Dim msgList = chatMessages.ToList
                 Do While funcCalls IsNot Nothing AndAlso funcCalls.Count > 0 AndAlso Interlocked.Increment(retry) <= ToolCallMaxRetry
-                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {.ToolCalls = funcCalls})
+                    messages.Add(New ChatMessage(ChatRoles.Assistant, Nothing) With {
+                        .ToolCalls = funcCalls,
+                        .ReasoningContent = If(reasoningBuilder.Length > 0, reasoningBuilder.ToString, Nothing)
+                    })
                     Dim toolResponseAdded = Await TryAddToolCallMessages(msgList, messages, options, funcCalls, cancellationToken)
                     If Not toolResponseAdded Then Exit Do
                     funcCallByName.Clear()

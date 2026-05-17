@@ -84,7 +84,7 @@ Public Class MsAICodeExamples
             End Sub)
             Assert.Fail("Exception expected")
         Catch ex As DeepSeekHttpRequestException
-            Assert.AreEqual("Model Not Exist", ex.Details.Message)
+            Assert.AreEqual("The supported API model names are deepseek-v4-pro or deepseek-v4-flash, but you passed wrong-model-name.", ex.Details.Message)
         End Try
     End Function
 

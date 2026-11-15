@@ -108,9 +108,9 @@ Namespace Serialization
             End If
 
             writer.WriteStartObject()
-            If value.Content IsNot Nothing Then
+            If value.ContentValue IsNot Nothing Then
                 writer.WritePropertyName("content")
-                writer.WriteValue(value.Content)
+                WriteChatContent(writer, value.ContentValue)
             End If
             If value.Role IsNot Nothing Then
                 writer.WritePropertyName("role")
@@ -139,6 +139,66 @@ Namespace Serialization
 
             writer.WriteEndObject()
         End Sub ' WriteChatMessage
+
+        ''' <summary>
+        ''' Writes <see cref="ChatContentPart"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteChatContentPart(writer As Global.Newtonsoft.Json.JsonWriter, value As ChatContentPart)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartObject()
+            If value.Type IsNot Nothing Then
+                writer.WritePropertyName("type")
+                writer.WriteValue(value.Type)
+            End If
+            If value.Text IsNot Nothing Then
+                writer.WritePropertyName("text")
+                writer.WriteValue(value.Text)
+            End If
+            If value.ImageUrl IsNot Nothing Then
+                writer.WritePropertyName("image_url")
+                WriteChatImageUrl(writer, value.ImageUrl)
+            End If
+            If value.FileId IsNot Nothing Then
+                writer.WritePropertyName("file_id")
+                writer.WriteValue(value.FileId)
+            End If
+            If value.FileData IsNot Nothing Then
+                writer.WritePropertyName("file_data")
+                writer.WriteValue(value.FileData)
+            End If
+            If value.FileName IsNot Nothing Then
+                writer.WritePropertyName("filename")
+                writer.WriteValue(value.FileName)
+            End If
+
+            writer.WriteEndObject()
+        End Sub ' WriteChatContentPart
+
+        ''' <summary>
+        ''' Writes <see cref="ChatImageUrl"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteChatImageUrl(writer As Global.Newtonsoft.Json.JsonWriter, value As ChatImageUrl)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartObject()
+            If value.Url IsNot Nothing Then
+                writer.WritePropertyName("url")
+                writer.WriteValue(value.Url)
+            End If
+            If value.Detail IsNot Nothing Then
+                writer.WritePropertyName("detail")
+                writer.WriteValue(value.Detail)
+            End If
+
+            writer.WriteEndObject()
+        End Sub ' WriteChatImageUrl
 
         ''' <summary>
         ''' Writes <see cref="ToolCall"/> to JsonWriter.
@@ -448,6 +508,22 @@ Namespace Serialization
         End Sub
 
         ''' <summary>
+        ''' Writes array of <see cref="ChatContentPart"/> to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteIReadOnlyListOfChatContentPart(writer As Global.Newtonsoft.Json.JsonWriter, value As IReadOnlyList(Of ChatContentPart))
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+
+            writer.WriteStartArray()
+            For Each item In value
+                WriteChatContentPart(writer, item)
+            Next
+            writer.WriteEndArray()
+        End Sub
+
+        ''' <summary>
         ''' Writes array of <see cref="ToolCall"/> to JsonWriter.
         ''' </summary>
         Private Shared Sub WriteIReadOnlyListOfToolCall(writer As Global.Newtonsoft.Json.JsonWriter, value As IReadOnlyList(Of ToolCall))
@@ -495,6 +571,23 @@ Namespace Serialization
                 writer.WriteNull()
             End If
         End Sub ' WriteStringOrObjectOfNamedToolChoice
+
+        ''' <summary>
+        ''' Writes composite type <see cref="ChatContent"/> with type-based discriminator to JsonWriter.
+        ''' </summary>
+        Private Shared Sub WriteChatContent(writer As Global.Newtonsoft.Json.JsonWriter, value As ChatContent)
+            If value Is Nothing Then
+                writer.WriteNull()
+                Return
+            End If
+            If value.Text IsNot Nothing Then
+                writer.WriteValue(value.Text)
+            ElseIf value.Parts IsNot Nothing Then
+                WriteIReadOnlyListOfChatContentPart(writer, value.Parts)
+            Else
+                writer.WriteNull()
+            End If
+        End Sub ' WriteChatContent
 
     End Class ' ChatRequestWriter
 End Namespace

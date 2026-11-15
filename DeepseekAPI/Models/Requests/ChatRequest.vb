@@ -1,4 +1,5 @@
-﻿Imports System.IO
+Imports System.ComponentModel
+Imports System.IO
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports Nukepayload2.AI.Providers.Deepseek.Serialization
@@ -377,10 +378,57 @@ Namespace Models
     ''' 聊天消息
     ''' </summary>
     Public Class ChatMessage
+        Private _contentValue As ChatContent
+
         ''' <summary>
-        ''' 消息的内容
+        ''' 消息的纯文本内容。设置该属性会覆盖 <see cref="Parts"/>。
         ''' </summary>
         Public Property Content As String
+            Get
+                If _contentValue Is Nothing Then Return Nothing
+                Return _contentValue.Text
+            End Get
+            Set(value As String)
+                If value Is Nothing Then
+                    _contentValue = Nothing
+                Else
+                    _contentValue = New ChatContent With {.Text = value}
+                End If
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' 序列化用的 <c>content</c> 容器。通常不需要直接设置。
+        ''' </summary>
+        <EditorBrowsable(EditorBrowsableState.Never)>
+        Public Property ContentValue As ChatContent
+            Get
+                Return _contentValue
+            End Get
+            Set(value As ChatContent)
+                _contentValue = value
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' 多模态内容块。设置该属性会覆盖 <see cref="Content"/>。
+        ''' </summary>
+        ''' <remarks>
+        ''' 使用 <see cref="ChatContentPart"/> 的工厂方法创建文本、图片和文件块。
+        ''' </remarks>
+        Public Property Parts As IReadOnlyList(Of ChatContentPart)
+            Get
+                If _contentValue Is Nothing Then Return Nothing
+                Return _contentValue.Parts
+            End Get
+            Set(value As IReadOnlyList(Of ChatContentPart))
+                If value Is Nothing Then
+                    _contentValue = Nothing
+                Else
+                    _contentValue = New ChatContent With {.Parts = value}
+                End If
+            End Set
+        End Property
 
         ''' <summary>
         ''' 消息角色，详见 <see cref="ChatRoles"/>。必填，否则服务端会报错。

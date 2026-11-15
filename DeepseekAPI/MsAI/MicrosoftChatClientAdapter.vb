@@ -1,4 +1,4 @@
-﻿Imports System.Text
+Imports System.Text
 Imports System.Threading
 Imports Microsoft.Extensions.AI
 Imports Newtonsoft.Json.Linq
@@ -155,11 +155,47 @@ Public Class MicrosoftChatClientAdapter
     End Function
 
     Private Shared Function ConvertMessage(msg As MSChatMessage) As ChatMessage
-        Dim reasoning = msg.Contents.OfType(Of TextReasoningContent).FirstOrDefault()
-        Return New ChatMessage(msg.Role.Value, msg.Text) With {
+        Dim reasoning = msg.Contents?.OfType(Of TextReasoningContent).FirstOrDefault()
+        Dim parts As New List(Of ChatContentPart)
+        Dim hasMedia = False
+        If msg.Contents IsNot Nothing Then
+            For Each content As AIContent In msg.Contents
+                If TypeOf content Is TextContent Then
+                    Dim text = DirectCast(content, TextContent).Text
+                    If text IsNot Nothing Then
+                        parts.Add(ChatContentPart.FromText(text))
+                    End If
+                ElseIf TypeOf content Is DataContent Then
+                    Dim data = DirectCast(content, DataContent)
+                    If IsImageMediaType(data.MediaType) Then
+                        If data.Data.Length > 0 Then
+                            parts.Add(ChatContentPart.FromImageBytes(data.MediaType, data.Data.ToArray()))
+                            hasMedia = True
+                        ElseIf Not String.IsNullOrEmpty(data.Uri) Then
+                            parts.Add(ChatContentPart.FromImageUrl(data.Uri))
+                            hasMedia = True
+                        End If
+                    End If
+                ElseIf TypeOf content Is UriContent Then
+                    Dim uri = DirectCast(content, UriContent)
+                    If IsImageMediaType(uri.MediaType) AndAlso uri.Uri IsNot Nothing Then
+                        parts.Add(ChatContentPart.FromImageUrl(uri.Uri.AbsoluteUri))
+                        hasMedia = True
+                    End If
+                End If
+            Next
+        End If
+        Dim result As New ChatMessage(msg.Role.Value, If(hasMedia, Nothing, msg.Text)) With {
             .ToolCallId = TryCast(msg.AdditionalProperties?!tool_call_id, String),
             .ReasoningContent = reasoning?.Text
         }
+        If hasMedia Then result.Parts = parts
+        Return result
+    End Function
+
+    Private Shared Function IsImageMediaType(mediaType As String) As Boolean
+        Return mediaType IsNot Nothing AndAlso
+               mediaType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
     End Function
 
     Private Shared Function TryParseJObjectArgs(arguments As String) As AIFunctionArguments

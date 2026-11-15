@@ -6,10 +6,10 @@ Option Strict On
 Option Infer On
 Option Explicit On
 Option Compare Binary
+Imports Nukepayload2.AI.Providers.Deepseek.Models
 Imports System.IO
 Imports Newtonsoft.Json.Linq
 Imports Nukepayload2.IO.Json.Serialization.NewtonsoftJson
-Imports Nukepayload2.AI.Providers.Deepseek.Models
 
 Namespace Serialization
     Partial Class ListModelsReader
@@ -20,19 +20,19 @@ Namespace Serialization
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
-
+        
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
-                readState.OnConflictingTokenType("JsonListModelResponse", JsonReadErrorHandler.Positions.StartObject, reader)
+                readState.OnConflictingTokenType("ListModelResponse", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
-
+        
             Dim entity As New ListModelResponse
-
+        
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
             End If
-
+        
             Do
                 Select Case reader.TokenType
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
@@ -45,7 +45,7 @@ Namespace Serialization
                                 If reader.TokenType = Global.Newtonsoft.Json.JsonToken.Null Then
                                     entity.TypeName = Nothing
                                 ElseIf reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartObject Or reader.TokenType = Global.Newtonsoft.Json.JsonToken.StartArray Then
-                                    readState.OnConflictingTokenType("JsonListModelResponse", name, reader)
+                                    readState.OnConflictingTokenType("ListModelResponse", name, reader)
                                 Else
                                     entity.TypeName = Convert.ToString(reader.Value)
                                 End If
@@ -59,7 +59,7 @@ Namespace Serialization
                                     entity.Data = ReadIReadOnlyListOfModelBasicInformation(reader, readState)
                                 End If
                             Case Else
-                                readState.OnMissingProperty("JsonListModelResponse", name, reader)
+                                readState.OnMissingProperty("ListModelResponse", name, reader)
                         End Select
                     Case Global.Newtonsoft.Json.JsonToken.EndObject
                         Exit Do
@@ -67,14 +67,14 @@ Namespace Serialization
                         Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
                 End Select
             Loop While reader.Read()
-
+        
             Dim endDepth As Integer = reader.Depth
             If endDepth <> startDepth Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
             End If
-
+        
             Return entity
-        End Function ' ReadJsonListModelResponse
+        End Function ' ReadListModelResponse
         ''' <summary>
         ''' Reads <see cref="ModelBasicInformation"/> from JsonReader.
         ''' </summary>
@@ -82,19 +82,19 @@ Namespace Serialization
             If reader.TokenType = Global.Newtonsoft.Json.JsonToken.None Then
                 reader.Read()
             End If
-
+        
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartObject Then
                 readState.OnConflictingTokenType("ModelBasicInformation", JsonReadErrorHandler.Positions.StartObject, reader)
                 Return Nothing
             End If
-
+        
             Dim entity As New ModelBasicInformation
-
+        
             Dim startDepth As Integer = reader.Depth
             If Not reader.Read() Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
             End If
-
+        
             Do
                 Select Case reader.TokenType
                     Case Global.Newtonsoft.Json.JsonToken.PropertyName
@@ -142,12 +142,12 @@ Namespace Serialization
                         Throw readState.OnUnrecoverableError("Unexpected token while loading JObject. The reader is at unexpected position.")
                 End Select
             Loop While reader.Read()
-
+        
             Dim endDepth As Integer = reader.Depth
             If endDepth <> startDepth Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
             End If
-
+        
             Return entity
         End Function ' ReadModelBasicInformation
         ''' <summary>
@@ -159,19 +159,19 @@ Namespace Serialization
                     Throw readState.OnUnrecoverableError("Error reading JArray from JsonReader.")
                 End If
             End If
-
+        
             If reader.TokenType <> Global.Newtonsoft.Json.JsonToken.StartArray Then
                 readState.OnConflictingTokenType("IReadOnlyListOfModelBasicInformation", JsonReadErrorHandler.Positions.StartArray, reader)
                 Return Nothing
             End If
-
+        
             Dim entityList As New List(Of ModelBasicInformation)
             Dim startDepth As Integer = reader.Depth
-
+        
             If Not reader.Read() Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. File was truncated.")
             End If
-
+        
             Do
                 Dim item As ModelBasicInformation
                 Select Case reader.TokenType
@@ -187,13 +187,13 @@ Namespace Serialization
                 End Select
                 entityList.Add(item)
             Loop While reader.Read()
-
+        
             Dim endDepth As Integer = reader.Depth
-
+        
             If endDepth <> startDepth Then
                 Throw readState.OnUnrecoverableError("Error reading from JsonReader. The reader is at unexpected position.")
             End If
-
+        
             Return entityList
         End Function
 
